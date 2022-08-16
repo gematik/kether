@@ -2,6 +2,9 @@ package de.gematik.kether.rpc
 
 import de.gematik.kether.extensions.toRLP
 import de.gematik.kether.types.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -16,6 +19,19 @@ private val logger = KotlinLogging.logger{}
  */
 @ExperimentalSerializationApi
 class Eth(val rpc: Rpc) {
+
+    /**
+     * Provides a flow of notifications. Use [ethSubscribe] to subscribe for notifications and then [kotlinx.coroutines.flow.collect] to receive and process notifications. Please note that the result of a request is not a notification.
+     * ##example
+     * ```kt
+     * val rpcResponse = eth.ethSubscribe()
+     * ...
+     * eth.notifications.collect{
+     *    //process notifications here
+     * }
+     * ```
+     */
+    val notifications = rpc.notifications
 
     /**
      * Returns the number of most recent block.
@@ -80,9 +96,25 @@ class Eth(val rpc: Rpc) {
         return deserialize(rpc.call(RpcRequest(RpcMethods.eth_sendTransaction, listOf(transaction))))
     }
 
+    fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
+        return runBlocking {
+            when(type){
+                SubscriptionTypes.newHeads -> rpc.send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name)))
+                SubscriptionTypes.logs -> rpc.send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name, filter)))
+            }
+            @Suppress("UNCHECKED_CAST")
+            rpc.responses.first() as RpcResponse<String>
+        }
+    }
+
     private inline fun <reified T> deserialize(response: Response): RpcResponse<T> {
         val json = response.body!!.string()
-        logger.debug (json.replace("\\s".toRegex(), ""))
-        return Json.decodeFromString<RpcResponse<T>>(json)
+        return deserialize(json)
     }
+
+    private inline fun <reified T> deserialize(json: String): RpcResponse<T> {
+        logger.debug (json.replace("\\s".toRegex(), ""))
+        return Json.decodeFromString(json)
+    }
+
 }

@@ -9,6 +9,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable(with = QuantitySerializer::class)
 class Quantity(val value: Long) {
+    companion object{
+        val blockLatest = Quantity(Block.latest.value)
+        val blockEarlist = Quantity(Block.earlist.value)
+        val blockPending = Quantity(Block.pending.value)
+    }
     init {
         check(value >= -3) { "invalid value" }
     }

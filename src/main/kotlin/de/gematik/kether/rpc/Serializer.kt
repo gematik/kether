@@ -66,7 +66,7 @@ class DataSerializer : KSerializer<Data> {
         return when (hexString.length) {
             42 -> Data20(hexString)
             66 -> Data32(hexString)
-            else -> error("unsupported data length")
+            else -> Data(hexString = hexString)
         }
     }
 }
