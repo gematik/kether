@@ -11,10 +11,13 @@ import org.junit.runners.Suite
 @OptIn(ExperimentalSerializationApi::class)
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
-    EthTests::class,
     SerializerTests::class,
-    CryptoTest::class,
-    ContractTests::class
+    CryptoTests::class,
+    EthTests::class,
+    EthPubSubTests::class,
+    ContractCommonTest::class,
+    ContractStorageTests::class,
+    ContractHelloWorldTests::class
 )
 
 class TestSuite {

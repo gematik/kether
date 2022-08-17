@@ -11,3 +11,5 @@ import java.math.BigInteger
 
 typealias Address = Data20
 typealias EthUint256 = BigInteger
+typealias EthString = String
+typealias EthSelector = ByteArray
