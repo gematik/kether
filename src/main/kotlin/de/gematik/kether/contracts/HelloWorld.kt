@@ -39,7 +39,6 @@ class HelloWorld(
     }
 
     fun cancel() {
-        eth.close()
         scope.cancel()
     }
 
