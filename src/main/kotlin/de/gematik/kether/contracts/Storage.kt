@@ -1,9 +1,9 @@
+import de.gematik.kether.abi.AbiUint256
 import de.gematik.kether.abi.DataDecoder
 import de.gematik.kether.abi.DataEncoder
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.types.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import java.math.BigInteger
 
 @OptIn(ExperimentalSerializationApi::class)
 class Storage constructor(
@@ -18,7 +18,7 @@ class Storage constructor(
 
     // retrieve():(uint256)
     data class ResultsRetrieve(
-        val value: EthUint256
+        val value: AbiUint256
     )
 
     fun retrieve(): ResultsRetrieve {
@@ -47,7 +47,7 @@ class Storage constructor(
     }
 
     // store(uint256)
-    fun store(num: EthUint256) {
+    fun store(num: AbiUint256) {
         eth.ethSendTransaction(
             baseTransaction.copy(
                 data = DataEncoder()

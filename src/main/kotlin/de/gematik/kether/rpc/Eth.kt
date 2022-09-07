@@ -10,6 +10,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import okhttp3.Response
+import java.io.Closeable
 
 private val logger = KotlinLogging.logger{}
 
@@ -18,7 +19,7 @@ private val logger = KotlinLogging.logger{}
  * gematik.de
  */
 @ExperimentalSerializationApi
-class Eth(val rpc: Rpc) {
+class Eth(val rpc: Rpc) : Closeable {
 
     /**
      * Provides a flow of notifications. Use [ethSubscribe] to subscribe for notifications and then [kotlinx.coroutines.flow.collect] to receive and process notifications. Please note that the result of a request is not a notification.
@@ -32,6 +33,15 @@ class Eth(val rpc: Rpc) {
      * ```
      */
     val notifications = rpc.notifications
+
+    /**
+     * Closes the used resources.
+     */
+
+    override fun close(){
+
+        rpc.close()
+    }
 
     /**
      * Returns the number of most recent block.
@@ -96,15 +106,15 @@ class Eth(val rpc: Rpc) {
         return deserialize(rpc.call(RpcRequest(RpcMethods.eth_sendTransaction, listOf(transaction))))
     }
 
+    /**
+     * Starts a subscription (on WebSockets / IPC / TCP transports) to a particular event.
+     * For every event that matches the subscription a JSON-RPC notification with event details
+     * and subscription ID will be sent to a client.
+     * @return subscription id
+     * @throws Exception if failure
+     */
     fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
-        return runBlocking {
-            when(type){
-                SubscriptionTypes.newHeads -> rpc.send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name)))
-                SubscriptionTypes.logs -> rpc.send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name, filter)))
-            }
-            @Suppress("UNCHECKED_CAST")
-            rpc.responses.first() as RpcResponse<String>
-        }
+        return rpc.subscribe(type, filter)
     }
 
     private inline fun <reified T> deserialize(response: Response): RpcResponse<T> {

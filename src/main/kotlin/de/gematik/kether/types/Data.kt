@@ -30,9 +30,13 @@ open class Data {
 }
 
 @Serializable(with = DataSerializer::class)
-class Data20(hexString: String) : Data(20, hexString) {
+class Data20 : Data {
+    constructor(hexString: String) : super(20, hexString)
+    constructor(byteArray: ByteArray) : super(byteArray.copyOf(20))
 }
 
 @Serializable(with = DataSerializer::class)
-class Data32(hexString: String) : Data(32, hexString) {
+class Data32 : Data {
+    constructor(hexString: String) : super(32, hexString)
+    constructor(byteArray: ByteArray) : super(byteArray.copyOf(32))
 }

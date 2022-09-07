@@ -1,18 +1,11 @@
 package de.gematik.kether.rpc
 
-import HelloWorld
-import Storage
-import de.gematik.kether.abi.DataDecoder
-import de.gematik.kether.abi.DataEncoder
+import de.gematik.kether.abi.*
 import de.gematik.kether.extensions.toRLP
 import de.gematik.kether.types.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
 import java.math.BigInteger
-import java.util.*
-import kotlin.random.Random
 
 /**
  * Created by rk on 02.08.2022.
@@ -23,12 +16,12 @@ class ContractCommonTest {
     @Test
     fun encodingFunctionIntArg() {
         val selector = byteArrayOf(1, 2, 3, 4)
-        val arg = EthUint256("1")
+        val arg = AbiUint256("1")
         val function = DataEncoder().encodeSelector(selector).encode(arg).data()
         val decoder = DataDecoder(function)
         assert(
-            decoder.next<EthSelector>().contentEquals(selector) &&
-                    decoder.next<EthUint256>().toInt() == 1
+            decoder.next<AbiSelector>().contentEquals(selector) &&
+                    decoder.next<AbiUint256>().toInt() == 1
         )
     }
 
@@ -38,7 +31,7 @@ class ContractCommonTest {
         val result = DataEncoder().encode(num).data()
         val decoder = DataDecoder(result)
         assert(
-            decoder.next<EthUint256>() == num
+            decoder.next<AbiUint256>() == num
         )
     }
 
@@ -48,7 +41,7 @@ class ContractCommonTest {
         val result = DataEncoder().encode(string).data()
         val decoder = DataDecoder(result)
         assert(
-            decoder.next<EthString>() == "test"
+            decoder.next<AbiString>() == "test"
         )
     }
 

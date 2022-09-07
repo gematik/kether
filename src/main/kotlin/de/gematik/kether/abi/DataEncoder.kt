@@ -1,8 +1,6 @@
 package de.gematik.kether.abi
 
 import de.gematik.kether.types.Data
-import de.gematik.kether.types.EthString
-import de.gematik.kether.types.EthUint256
 import java.nio.charset.Charset
 
 /**
@@ -23,7 +21,7 @@ class DataEncoder() {
         return this
     }
 
-    fun encode(int: EthUint256): DataEncoder {
+    fun encode(int: AbiUint256): DataEncoder {
         var b = int.toByteArray()
         check(b.size <= 32)
         b = b.copyInto(
@@ -34,7 +32,7 @@ class DataEncoder() {
         return this
     }
 
-    fun encode(string: EthString): DataEncoder {
+    fun encode(string: AbiString): DataEncoder {
         val str = string.toByteArray(Charset.forName("UTF-8"))
         val len = str.size.toBigInteger().toByteArray()
         val bytes = ByteArray((1 + str.size / 32 + 1) * 32)

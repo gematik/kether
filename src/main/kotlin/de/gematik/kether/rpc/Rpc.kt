@@ -4,6 +4,7 @@ import de.gematik.kether.types.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -14,6 +15,7 @@ import mu.KotlinLogging
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.Closeable
 
 /**
  * Created by rk on 02.08.2022.
@@ -23,7 +25,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 private val logger = KotlinLogging.logger {}
 
 @ExperimentalSerializationApi
-class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://localhost:8546") {
+class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://localhost:8546") : Closeable {
     private var id: Int = 0
 
     private val json = Json{
@@ -60,6 +62,23 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
                     }
                 }
             )
+        }
+    }
+
+    override fun close() {
+        if(this::ws.isInitialized){
+            ws.close(1000, "socket closed regularly")
+        }
+    }
+
+    fun subscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
+        return runBlocking {
+            when(type){
+                SubscriptionTypes.newHeads -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name)))
+                SubscriptionTypes.logs -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name, filter)))
+            }
+            @Suppress("UNCHECKED_CAST")
+            responses.first() as RpcResponse<String>
         }
     }
 
