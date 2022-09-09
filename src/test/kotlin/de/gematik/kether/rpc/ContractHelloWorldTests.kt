@@ -11,6 +11,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import java.util.*
 import kotlin.random.Random
@@ -23,8 +25,19 @@ import kotlin.random.Random
 class ContractHelloWorldTests {
     val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
     val helloWorldAddress = Address("0xa767c46126e850D7D6715Aa61Cb0D0aA9ACE6E5b")
+    lateinit var ethereum1: Eth
 
-    val ethereum1 = Eth(Rpc("http:ethereum1.lab.gematik.de:8547", "http:ethereum1.lab.gematik.de:8546"))
+    @Before
+    fun init() {
+        ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
+    }
+
+    @After
+    fun close() {
+        if (this::ethereum1.isInitialized) {
+            ethereum1.close()
+        }
+    }
 
     @Test
     fun helloWorldGreeting() {
@@ -52,6 +65,7 @@ class ContractHelloWorldTests {
                 helloWorld.eth.notifications.collect {
                     val result = helloWorld.greeting().value
                     assert(greeting == result)
+                    helloWorld.cancel()
                     cancel()
                 }
             }
