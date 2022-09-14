@@ -60,7 +60,7 @@ class HelloWorld(
             baseTransaction.copy(
                 data = DataEncoder()
                     .encodeSelector(functionGreeting)
-                    .data()
+                    .build()
             ),
             Quantity(Block.latest.value)
         ).result!!.let {
@@ -74,7 +74,7 @@ class HelloWorld(
             baseTransaction.copy(
                 data = DataEncoder()
                     .encodeSelector(functionKill)
-                    .data()
+                    .build()
             )
         )
     }
@@ -86,7 +86,7 @@ class HelloWorld(
                 data = DataEncoder()
                     .encodeSelector(functionNewGreeting)
                     .encode(greeting)
-                    .data()
+                    .build()
             )
         )
     }

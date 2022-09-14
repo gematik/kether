@@ -17,7 +17,7 @@ class ContractCommonTest {
     fun encodingFunctionIntArg() {
         val selector = byteArrayOf(1, 2, 3, 4)
         val arg = AbiUint256("1")
-        val function = DataEncoder().encodeSelector(selector).encode(arg).data()
+        val function = DataEncoder().encodeSelector(selector).encode(arg).build()
         val decoder = DataDecoder(function)
         assert(
             decoder.next<AbiSelector>().contentEquals(selector) &&
@@ -28,7 +28,7 @@ class ContractCommonTest {
     @Test
     fun decodingIntResult() {
         val num = BigInteger("1")
-        val result = DataEncoder().encode(num).data()
+        val result = DataEncoder().encode(num).build()
         val decoder = DataDecoder(result)
         assert(
             decoder.next<AbiUint256>() == num
@@ -38,7 +38,7 @@ class ContractCommonTest {
     @Test
     fun decodingStringResult() {
         val string = "test"
-        val result = DataEncoder().encode(string).data()
+        val result = DataEncoder().encode(string).build()
         val decoder = DataDecoder(result)
         assert(
             decoder.next<AbiString>() == "test"
@@ -49,7 +49,7 @@ class ContractCommonTest {
     fun encodeTransaction() {
         val transaction = Transaction(
             to = Address("0x1122334455667788990011223344556677889900"),
-            data = DataEncoder().encodeSelector(byteArrayOf(1,2,3,4)).data()
+            data = DataEncoder().encodeSelector(byteArrayOf(1,2,3,4)).build()
         )
         val byteArray = transaction.toRLP()
         assert(byteArray.size > 0)

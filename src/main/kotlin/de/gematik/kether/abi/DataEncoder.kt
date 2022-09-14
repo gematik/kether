@@ -42,7 +42,7 @@ class DataEncoder() {
         return this
     }
 
-    fun data(): Data {
+    fun build(): Data {
         var bytes = byteArrayOf()
         var bytesDynamic = byteArrayOf()
         chunks.forEach {

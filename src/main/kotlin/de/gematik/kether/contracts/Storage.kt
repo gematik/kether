@@ -26,7 +26,7 @@ class Storage constructor(
             baseTransaction.copy(
                 data = DataEncoder()
                     .encodeSelector(retrieveSelector)
-                    .data()
+                    .build()
             ),
             Quantity(Block.latest.value)
         ).result!!.let {
@@ -40,7 +40,7 @@ class Storage constructor(
             baseTransaction.copy(
                 data = DataEncoder()
                     .encodeSelector(incSelector)
-                    .data()
+                    .build()
             )
         )
 
@@ -53,7 +53,7 @@ class Storage constructor(
                 data = DataEncoder()
                     .encodeSelector(storeSelector)
                     .encode(num)
-                    .data()
+                    .build()
             )
         )
     }

@@ -49,7 +49,7 @@ class EthTests {
         val rpcResponse = eth.ethCall(
             Transaction(
                 to = Address("0x218d5fe2E168656eBDE49e7a4A3C97E699D0be78"),
-                data = DataEncoder().encodeSelector(Storage.retrieveSelector).data()
+                data = DataEncoder().encodeSelector(Storage.retrieveSelector).build()
             ),
             Quantity(Block.latest.value)
         )
