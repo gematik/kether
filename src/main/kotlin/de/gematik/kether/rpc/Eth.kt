@@ -107,14 +107,34 @@ class Eth(val rpc: Rpc) : Closeable {
     }
 
     /**
+     * Returns the receipt of a transaction by transaction hash. Note That the receipt is available even for pending transactions.
+     * @return transaction hash, or the zero hash if the transaction is not yet available.
+     * @throws Exception if failure
+     */
+    fun ethGetTransactionReceipt(hash: Data32) : RpcResponse<TransactionReceipt> {
+        return deserialize(rpc.call(RpcRequest(RpcMethods.eth_getTransactionReceipt, listOf(hash))))
+    }
+
+    /**
      * Starts a subscription (on WebSockets / IPC / TCP transports) to a particular event.
      * For every event that matches the subscription a JSON-RPC notification with event details
      * and subscription ID will be sent to a client.
+     * @param type subscription type - either [SubscriptionTypes.newHeads] or [SubscriptionTypes.logs]
      * @return subscription id
      * @throws Exception if failure
      */
     fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
         return rpc.subscribe(type, filter)
+    }
+
+    /**
+     * Unsubscribes from a subscription.
+     * @param subscriptionId id of subscription to unsubscribe from
+     * @return true if successful, false otherwise
+     * @throws Exception if failure
+     */
+    fun ethUnsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
+        return rpc.unsubscribe(subscriptionId)
     }
 
     private inline fun <reified T> deserialize(response: Response): RpcResponse<T> {

@@ -40,6 +40,24 @@ class ContractHelloWorldTests {
     }
 
     @Test
+    fun helloWorldDeploy() {
+            runBlocking {
+                val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
+                assert(receipt?.status?.value == 1L)
+                val helloWorld = HelloWorld(
+                    ethereum1,
+                    Transaction(
+                        to = receipt?.contractAddress,
+                        from = account2Address
+                    ),
+                )
+                val greeting = helloWorld.greeting().value
+                assert(greeting == "Hello World")
+                helloWorld.kill()
+            }
+    }
+
+    @Test
     fun helloWorldGreeting() {
         val helloWorld = HelloWorld(
             ethereum1,

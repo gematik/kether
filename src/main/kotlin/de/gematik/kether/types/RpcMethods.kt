@@ -12,6 +12,7 @@ enum class RpcMethods {
     eth_gasPrice,
     eth_call,
     eth_sendTransaction,
+    eth_getTransactionReceipt,
     eth_subscribe,
     eth_unsubscribe
 }

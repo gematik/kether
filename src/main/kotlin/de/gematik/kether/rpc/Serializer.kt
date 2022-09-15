@@ -9,6 +9,10 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigInteger
 
 /**
@@ -31,7 +35,13 @@ class AnySerializer : KSerializer<Any> {
     }
 
     override fun deserialize(decoder: Decoder): Any {
-        error("unsupported")
+        require(decoder is JsonDecoder)
+        val element = decoder.decodeJsonElement()
+        if(element.jsonPrimitive.isString){
+            return element.jsonPrimitive.content
+        }else{
+            return element.jsonPrimitive.boolean
+        }
     }
 }
 

@@ -31,10 +31,12 @@ abstract class Contract(
     init {
         scope.launch {
             eth.notifications.collect {
-                val log = it.params.result as Log
-                listOfEventDecoders.forEach {
-                    it(log)?.let {
-                        _events.emit(it)
+                if (it.params.result is Log) {
+                    val log = it.params.result
+                    listOfEventDecoders.forEach {
+                        it(log)?.let {
+                            _events.emit(it)
+                        }
                     }
                 }
             }

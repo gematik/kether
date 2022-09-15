@@ -39,7 +39,7 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
     internal val notifications = _notifications.asSharedFlow()
 
     private val _responses = MutableSharedFlow<RpcResponse<*>>()
-    internal val responses = _responses.asSharedFlow()
+    private val responses = _responses.asSharedFlow()
 
     private lateinit var ws: WebSocket
 
@@ -52,6 +52,7 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         runBlocking {
                             launch(Dispatchers.IO) {
+                                logger.debug("ws->:${text.replace("\\s".toRegex(), "")}")
                                 val message = deserialize(text)
                                 when(message){
                                     is RpcResponse<*> -> _responses.emit(message)
@@ -82,6 +83,15 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
         }
     }
 
+    fun unsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
+        return runBlocking {
+            send(RpcRequest(RpcMethods.eth_unsubscribe, listOf(subscriptionId)))
+            @Suppress("UNCHECKED_CAST")
+            responses.first() as RpcResponse<Boolean>
+        }
+    }
+
+
     fun call(request: RpcRequest): Response {
         request.id = id++
         val jsonString = json.encodeToString(request)
@@ -94,17 +104,16 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
     fun send(request: RpcRequest) {
         request.id = id++
         val json = json.encodeToString(request)
-        logger.debug("ws>>>: $json")
+        logger.debug("ws<-: $json")
         ws.send(json)
     }
 
     private fun deserialize(jsonString: String): Any {
-        logger.debug(jsonString.replace("\\s".toRegex(), ""))
         return runCatching {
             when{
                 jsonString.contains("number") -> json.decodeFromString<RpcNotification<Head>>(jsonString)
                 jsonString.contains("logIndex") -> json.decodeFromString<RpcNotification<Log>>(jsonString)
-                else -> json.decodeFromString<RpcResponse<String>>(jsonString)
+                else -> json.decodeFromString<RpcResponse<AnyResult>>(jsonString)
             }
 
         }.onFailure { logger.debug(it.message) }.getOrThrow()

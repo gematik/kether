@@ -4,6 +4,7 @@ import HelloWorld
 import de.gematik.kether.abi.toTopic
 import de.gematik.kether.types.*
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -41,17 +42,11 @@ class EthPubSubTests {
     @Test
     fun ethSubscribeNewHeads() {
         runBlocking {
-            val rpcResponse = eth.ethSubscribe(SubscriptionTypes.newHeads)
-            assert(rpcResponse.result != null)
-            val subscription = rpcResponse.result
-            launch {
-                eth.notifications.collect {
-                    assert(subscription == it.params.subscription)
-                    val newHead = it.params.result as Head
-                    assert(newHead.number?.toInt() != null)
-                    cancel()
-                }
-            }
+            val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
+            val newHead = eth.notifications.first{it.params.subscription == subscription}.params.result as Head
+            assert(newHead.number?.toInt() != null)
+            val isSuccess = eth.ethUnsubscribe(subscription).result!!
+            assert(isSuccess)
         }
     }
 

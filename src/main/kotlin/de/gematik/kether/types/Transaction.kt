@@ -12,7 +12,7 @@ import java.math.BigInteger
 data class Transaction(
     val from: Address? = null,
     val to: Address? = null,
-    val gasLimit: Quantity? = null,
+    val gas: Quantity? = null,
     val gasPrice: Quantity? = null,
     val value: Quantity? = null,
     val data: Data?=null,

@@ -98,7 +98,7 @@ fun Transaction.toRLP(isEIP1559: Boolean = false): ByteArray {
         listOf(
             nonce?.toRLP() ?: RlpEmpty,
             gasPrice?.toRLP() ?: RlpEmpty,
-            gasLimit?.toRLP() ?: RlpEmpty,
+            gas?.toRLP() ?: RlpEmpty,
             to?.toRLP() ?: RlpEmpty,
             value?.toRLP() ?: RlpEmpty,
             data?.toRLP() ?: RlpEmpty

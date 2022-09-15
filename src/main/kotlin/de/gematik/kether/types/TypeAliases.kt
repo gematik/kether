@@ -1,5 +1,8 @@
 package de.gematik.kether.types
 
+import de.gematik.kether.rpc.AnySerializer
+import de.gematik.kether.rpc.DataSerializer
+import kotlinx.serialization.Serializable
 import java.math.BigInteger
 
 /**
@@ -8,3 +11,6 @@ import java.math.BigInteger
  */
 
 typealias Address = Data20
+
+@Serializable(with = AnySerializer::class)
+class AnyResult : Any()
