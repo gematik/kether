@@ -17,7 +17,7 @@ class ContractStorageTests {
     val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
     val storageAddress = Address("0x218d5fe2E168656eBDE49e7a4A3C97E699D0be78")
 
-    val ethereum1 = Eth(Rpc("http:ethereum1.lab.gematik.de:8547"))
+    val ethereum1 = Eth(Rpc("http:ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
 
     @Test
     fun storageRetrieve() {
@@ -39,8 +39,8 @@ class ContractStorageTests {
                 )
             )
             val start = storage.retrieve().value.toInt()
-            storage.inc()
-            delay(5000)
+            val receipt = storage.inc()
+            assert(receipt.status.value == 1L)
             val end = storage.retrieve().value.toInt()
             assert(end == start + 1)
         }
@@ -57,8 +57,8 @@ class ContractStorageTests {
                 )
             )
             val random = Random.Default.nextLong()
-            storage.store(num = random.toBigInteger())
-            delay(5000)
+            val receipt = storage.store(num = random.toBigInteger())
+            assert(receipt.status.value == 1L)
             val result = storage.retrieve().value.toLong()
             assert(random == result)
         }

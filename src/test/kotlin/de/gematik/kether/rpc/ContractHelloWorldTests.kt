@@ -41,20 +41,20 @@ class ContractHelloWorldTests {
 
     @Test
     fun helloWorldDeploy() {
-            runBlocking {
-                val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
-                assert(receipt?.status?.value == 1L)
-                val helloWorld = HelloWorld(
-                    ethereum1,
-                    Transaction(
-                        to = receipt?.contractAddress,
-                        from = account2Address
-                    ),
-                )
-                val greeting = helloWorld.greeting().value
-                assert(greeting == "Hello World")
-                helloWorld.kill()
-            }
+        runBlocking {
+            val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
+            assert(receipt.status.value == 1L)
+            val helloWorld = HelloWorld(
+                ethereum1,
+                Transaction(
+                    to = receipt.contractAddress,
+                    from = account2Address
+                ),
+            )
+            val greeting = helloWorld.greeting().value
+            assert(greeting == "Hello World")
+            helloWorld.kill()
+        }
     }
 
     @Test
@@ -69,16 +69,19 @@ class ContractHelloWorldTests {
     @Test
     fun helloWorldNewGreeting() {
         runBlocking {
-            launch {
-                val helloWorld = HelloWorld(
-                    ethereum1,
-                    Transaction(
-                        from = account2Address,
-                        to = helloWorldAddress
-                    )
+            val helloWorld = HelloWorld(
+                ethereum1,
+                Transaction(
+                    from = account2Address,
+                    to = helloWorldAddress
                 )
-                val greeting = "Greetings at ${Date()}"
-                helloWorld.newGreeting(greeting = greeting)
+            )
+            val greeting = "Greetings at ${Date()}"
+            launch {
+                val receipt = helloWorld.newGreeting(greeting = greeting)
+                assert(receipt.status.value == 1L)
+            }
+            launch {
                 helloWorld.eth.ethSubscribe(SubscriptionTypes.logs)
                 helloWorld.eth.notifications.collect {
                     val result = helloWorld.greeting().value

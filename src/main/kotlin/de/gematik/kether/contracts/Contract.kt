@@ -3,12 +3,10 @@ package de.gematik.kether.contracts
 import de.gematik.kether.abi.AbiBytes32
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.types.*
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 
 /**
@@ -43,11 +41,61 @@ abstract class Contract(
         }
     }
 
+    companion object {
+        fun deploy(eth: Eth, from: Address, params: Data): TransactionReceipt {
+            return runBlocking {
+                eth.ethSendTransaction(
+                    Transaction(
+                        from = from,
+                        gas = Quantity(1000000),
+                        value = Quantity(0),
+                        gasPrice = Quantity(0),
+                        data = params
+                    )
+                ).result?.let {
+                    val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
+                    eth.notifications.first { it.params.subscription == subscription }
+                    eth.ethUnsubscribe(subscription)
+                    eth.ethGetTransactionReceipt(it).result ?: throw Exception("no result")
+                } ?: throw Exception("no transaction hash")
+            }
+        }
+    }
+
     fun cancel() {
         scope.cancel()
     }
 
-    fun subscribe(eventSelector: AbiBytes32): String? {
+    fun call(params: Data): Data {
+        return eth.ethCall(
+            baseTransaction.copy(
+                data = params
+            ),
+            Quantity(Block.latest.value)
+        ).result ?: throw Exception("no result")
+    }
+
+    suspend fun transact(params: Data): TransactionReceipt {
+        return withTimeout(10000) {
+            eth.ethSendTransaction(
+                baseTransaction.copy(
+                    data = params
+                )
+            ).let {
+                it.result ?: throw Exception(it.error?.message ?: "undefined error")
+                val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result
+                    ?: throw Exception("subscription id missing")
+                eth.notifications.first { it.params.subscription == subscription }
+                eth.ethUnsubscribe(subscription)
+                val receipt = it.result?.let {
+                    eth.ethGetTransactionReceipt(it)
+                }?.result
+                receipt ?: throw Exception(it.error?.message ?: "undefined error")
+            }
+        }
+    }
+
+    suspend fun subscribe(eventSelector: AbiBytes32): String? {
         return eth.ethSubscribe(
             SubscriptionTypes.logs,
             Filter(

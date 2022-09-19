@@ -123,7 +123,7 @@ class Eth(val rpc: Rpc) : Closeable {
      * @return subscription id
      * @throws Exception if failure
      */
-    fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
+    suspend fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
         return rpc.subscribe(type, filter)
     }
 
@@ -133,7 +133,7 @@ class Eth(val rpc: Rpc) : Closeable {
      * @return true if successful, false otherwise
      * @throws Exception if failure
      */
-    fun ethUnsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
+    suspend fun ethUnsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
         return rpc.unsubscribe(subscriptionId)
     }
 

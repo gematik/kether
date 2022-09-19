@@ -28,7 +28,7 @@ private val logger = KotlinLogging.logger {}
 class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://localhost:8546") : Closeable {
     private var id: Int = 0
 
-    private val json = Json{
+    private val json = Json {
         isLenient = true
         ignoreUnknownKeys = true
     }
@@ -54,7 +54,7 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
                             launch(Dispatchers.IO) {
                                 logger.debug("ws->:${text.replace("\\s".toRegex(), "")}")
                                 val message = deserialize(text)
-                                when(message){
+                                when (message) {
                                     is RpcResponse<*> -> _responses.emit(message)
                                     is RpcNotification<*> -> _notifications.emit(message)
                                 }
@@ -67,28 +67,24 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
     }
 
     override fun close() {
-        if(this::ws.isInitialized){
+        if (this::ws.isInitialized) {
             ws.close(1000, "socket closed regularly")
         }
     }
 
-    fun subscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
-        return runBlocking {
-            when(type){
+    suspend fun subscribe(type: SubscriptionTypes, filter: Filter = Filter()): RpcResponse<String> {
+            when (type) {
                 SubscriptionTypes.newHeads -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name)))
                 SubscriptionTypes.logs -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name, filter)))
             }
             @Suppress("UNCHECKED_CAST")
-            responses.first() as RpcResponse<String>
-        }
+            return responses.first() as RpcResponse<String>
     }
 
-    fun unsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
-        return runBlocking {
-            send(RpcRequest(RpcMethods.eth_unsubscribe, listOf(subscriptionId)))
-            @Suppress("UNCHECKED_CAST")
-            responses.first() as RpcResponse<Boolean>
-        }
+    suspend fun unsubscribe(subscriptionId: String): RpcResponse<Boolean> {
+        send(RpcRequest(RpcMethods.eth_unsubscribe, listOf(subscriptionId)))
+        @Suppress("UNCHECKED_CAST")
+        return responses.first() as RpcResponse<Boolean>
     }
 
 
@@ -110,7 +106,7 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
 
     private fun deserialize(jsonString: String): Any {
         return runCatching {
-            when{
+            when {
                 jsonString.contains("number") -> json.decodeFromString<RpcNotification<Head>>(jsonString)
                 jsonString.contains("logIndex") -> json.decodeFromString<RpcNotification<Log>>(jsonString)
                 else -> json.decodeFromString<RpcResponse<AnyResult>>(jsonString)
