@@ -1,4 +1,4 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.contracts
 
 import de.gematik.kether.abi.*
 import de.gematik.kether.extensions.toRLP

@@ -6,6 +6,7 @@ import de.gematik.kether.types.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -31,9 +32,11 @@ abstract class Contract(
             eth.notifications.collect {
                 if (it.params.result is Log) {
                     val log = it.params.result
-                    listOfEventDecoders.forEach {
-                        it(log)?.let {
-                            _events.emit(it)
+                    if (log.address?.value.contentEquals(baseTransaction.to?.value)) {
+                        listOfEventDecoders.forEach {
+                            it(log)?.let {
+                                _events.emit(it)
+                            }
                         }
                     }
                 }
@@ -58,6 +61,14 @@ abstract class Contract(
                     eth.ethUnsubscribe(subscription)
                     eth.ethGetTransactionReceipt(it).result ?: throw Exception("no result")
                 } ?: throw Exception("no transaction hash")
+            }
+        }
+
+        fun checkEvent(log: Log, eventType: ByteArray): Log? {
+            return if (log.topics?.get(0)?.value.contentEquals(eventType)) {
+                log
+            } else {
+                null
             }
         }
     }
@@ -105,16 +116,6 @@ abstract class Contract(
                 topics = arrayOf(Data32(eventSelector))
             )
         ).result
-    }
-
-    protected fun checkEvent(log: Log, eventType: ByteArray): Log? {
-        return if (log.address?.value.contentEquals(baseTransaction.to?.value) &&
-            log.topics?.get(0)?.value.contentEquals(eventType)
-        ) {
-            log
-        } else {
-            null
-        }
     }
 
 }

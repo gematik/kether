@@ -1,13 +1,10 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.contracts
 
 import HelloWorld
-import Storage
-import de.gematik.kether.abi.DataDecoder
-import de.gematik.kether.abi.DataEncoder
-import de.gematik.kether.extensions.toRLP
+import de.gematik.kether.rpc.Eth
+import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.types.*
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -15,7 +12,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.util.*
-import kotlin.random.Random
 
 /**
  * Created by rk on 02.08.2022.
@@ -78,7 +74,7 @@ class ContractHelloWorldTests {
             )
             val greeting = "Greetings at ${Date()}"
             launch {
-                val receipt = helloWorld.newGreeting(greeting = greeting)
+                val receipt = helloWorld.newGreeting(_greet = greeting)
                 assert(receipt.status.value == 1L)
             }
             launch {

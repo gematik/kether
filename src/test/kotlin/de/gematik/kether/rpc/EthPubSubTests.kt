@@ -3,6 +3,7 @@ package de.gematik.kether.rpc
 import HelloWorld
 import de.gematik.kether.abi.toTopic
 import de.gematik.kether.types.*
+import keccak
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -43,7 +44,7 @@ class EthPubSubTests {
     fun ethSubscribeNewHeads() {
         runBlocking {
             val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
-            val newHead = eth.notifications.first{it.params.subscription == subscription}.params.result as Head
+            val newHead = eth.notifications.first { it.params.subscription == subscription }.params.result as Head
             assert(newHead.number?.toInt() != null)
             val isSuccess = eth.ethUnsubscribe(subscription).result!!
             assert(isSuccess)
@@ -61,22 +62,25 @@ class EthPubSubTests {
                     to = helloWorldAddress
                 )
             )
-            val subscription = helloWorld.subscribe(HelloWorld.eventModified)
-            assert(subscription != null)
-
             val newGreeting = "Greetings at ${Date()}"
 
             launch {
-                helloWorld.events.collect {
-                    assert(it.topics.get(0).contentEquals(HelloWorld.eventModified))
-                    assert(it.topics.get(2).contentEquals(newGreeting.toTopic()))
-                    assert((it as HelloWorld.EventModified).newGreeting == newGreeting)
-                    cancel()
-                    helloWorld.cancel()
+                eth.ethSubscribe(SubscriptionTypes.logs)
+                eth.notifications.collect {
+                    if (it.params.result is Log) {
+                        val log = it.params.result as Log
+                        assert(log.topics?.get(0)?.value?.contentEquals("Modified(string,string,string,string)".toTopic()) == true)
+                        assert(log.topics?.get(2)?.value?.contentEquals(newGreeting.toTopic()) == true)
+                        cancel()
+                        helloWorld.cancel()
+                    }
                 }
             }
 
-            helloWorld.newGreeting(greeting = newGreeting)
+            //firing log
+            launch {
+                helloWorld.newGreeting(_greet = newGreeting)
+            }
         }
     }
 

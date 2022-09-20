@@ -1,4 +1,4 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.extensions
 
 import keccak
 import kotlinx.serialization.ExperimentalSerializationApi

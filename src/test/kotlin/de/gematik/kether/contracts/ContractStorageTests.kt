@@ -1,8 +1,9 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.contracts
 
 import Storage
+import de.gematik.kether.rpc.Eth
+import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.types.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
