@@ -24,4 +24,4 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.11")
 }
 
-tasks.register<ConvertAbiTask>("convertABI")
+tasks.register<de.gematik.kether.codegen.ConvertAbiTask>("convertABI")

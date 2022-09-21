@@ -1,3 +1,5 @@
+package de.gematik.kether.extensions
+
 import org.bouncycastle.jcajce.provider.digest.Keccak
 
 /**

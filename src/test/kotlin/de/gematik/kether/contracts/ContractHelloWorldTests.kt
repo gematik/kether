@@ -1,6 +1,6 @@
 package de.gematik.kether.contracts
 
-import HelloWorld
+import de.gematik.kether.codegen.HelloWorld
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.types.*

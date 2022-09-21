@@ -1,4 +1,4 @@
-package codegen
+package de.gematik.kether.codegen
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -97,16 +97,16 @@ class CodeGenTest {
 
     @Test
     fun generateCodeTest() {
-        val code = CodeGenerator("HelloWorld", abi, byteCode).generateCode()
-        assert(code.startsWith("import de.gematik.kether.abi.*"))
+        val code = CodeGenerator("de.gematik.kether.codegen", "HelloWorld", abi, byteCode).generateCode()
+        assert(code.startsWith("package de.gematik.kether.codegen"))
     }
 
     @Test
     fun generateCodeFromFiles() {
-        val code = CodeGenerator(
+        val code = CodeGenerator("de.gematik.kether.codegen",
             File("../src/main/kotlin/de/gematik/kether/contracts/GLDToken.abi"),
             null
         ).generateCode()
-        assert(code.startsWith("import de.gematik.kether.abi.*"))
+        assert(code.startsWith("package de.gematik.kether.codegen"))
     }
 }

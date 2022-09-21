@@ -1,6 +1,5 @@
 package de.gematik.kether.extensions
 
-import keccak
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
 

@@ -1,6 +1,7 @@
 package de.gematik.kether.rpc
 
 import de.gematik.kether.abi.DataEncoder
+import de.gematik.kether.codegen.Storage
 import de.gematik.kether.types.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test

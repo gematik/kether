@@ -1,4 +1,4 @@
-package codegen
+package de.gematik.kether.codegen
 
 import kotlinx.serialization.json.*
 import java.io.File
@@ -8,16 +8,18 @@ import java.io.File
  * gematik.de
  */
 @OptIn(ExperimentalStdlibApi::class)
-class CodeGenerator(private val contractName: String, private val abi: JsonArray, private val byteCode: String? = null) {
-    constructor(abiFile: File, byteCodeFile: File?) : this(abiFile.name.substring(0, abiFile.name.indexOfLast{it=='.'} ),
+class CodeGenerator(private val packageName: String, private val contractName: String, private val abi: JsonArray, private val byteCode: String? = null) {
+    constructor(packageName: String, abiFile: File, byteCodeFile: File?) : this(packageName, abiFile.name.substring(0, abiFile.name.indexOfLast{it=='.'} ),
         abi = Json.parseToJsonElement(abiFile.readText(Charsets.UTF_8)).jsonArray,
         byteCode = byteCodeFile?.let {
             Json.parseToJsonElement(it.readText(Charsets.UTF_8)).jsonObject.get("object")?.jsonPrimitive?.content
         })
 
-    private val template = """import de.gematik.kether.abi.*
+    private val template = """package $packageName
+        import de.gematik.kether.abi.*
         import de.gematik.kether.contracts.Contract
         import de.gematik.kether.extensions.hexToByteArray
+        import de.gematik.kether.extensions.keccak
         import de.gematik.kether.rpc.Eth
         import de.gematik.kether.types.*
         import kotlinx.serialization.ExperimentalSerializationApi

@@ -1,9 +1,8 @@
 package de.gematik.kether.rpc
 
-import HelloWorld
 import de.gematik.kether.abi.toTopic
+import de.gematik.kether.codegen.HelloWorld
 import de.gematik.kether.types.*
-import keccak
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
