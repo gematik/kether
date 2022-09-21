@@ -21,5 +21,7 @@ data class TransactionReceipt(
     val transactionHash: Data32,
     val transactionIndex: Quantity,
     val type: Quantity? = null
-)
+){
+    val isSuccess = status.value == 1L
+}
 

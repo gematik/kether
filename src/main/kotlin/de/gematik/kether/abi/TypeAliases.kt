@@ -1,5 +1,6 @@
 package de.gematik.kether.abi
 
+import de.gematik.kether.types.Address
 import java.math.BigInteger
 
 /**
@@ -11,3 +12,6 @@ typealias AbiUint256 = BigInteger
 typealias AbiString = String
 typealias AbiSelector = ByteArray
 typealias AbiBytes32 = ByteArray
+typealias AbiAddress = Address
+typealias AbiBool = Boolean
+typealias AbiUint8 = BigInteger

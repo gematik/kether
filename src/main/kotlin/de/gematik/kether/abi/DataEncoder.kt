@@ -32,6 +32,14 @@ class DataEncoder() {
         return this
     }
 
+    fun encode(address: AbiAddress): DataEncoder {
+        var b = address.value
+        check(b.size <= 32)
+        b = b.copyInto(ByteArray(32),32 - b.size)
+        chunks.add(Chunk(false, b))
+        return this
+    }
+
     fun encode(string: AbiString): DataEncoder {
         val str = string.toByteArray(Charset.forName("UTF-8"))
         val len = str.size.toBigInteger().toByteArray()

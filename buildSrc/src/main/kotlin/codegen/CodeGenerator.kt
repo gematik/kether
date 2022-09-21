@@ -1,4 +1,4 @@
-package de.gematik.kether.codegen
+package codegen
 
 import kotlinx.serialization.json.*
 import java.io.File
@@ -7,8 +7,9 @@ import java.io.File
  * Created by rk on 20.09.2022.
  * gematik.de
  */
-class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = null) {
-    constructor(abiFile: File, byteCodeFile: File?) : this(
+@OptIn(ExperimentalStdlibApi::class)
+class CodeGenerator(private val contractName: String, private val abi: JsonArray, private val byteCode: String? = null) {
+    constructor(abiFile: File, byteCodeFile: File?) : this(abiFile.name.substring(0, abiFile.name.indexOfLast{it=='.'} ),
         abi = Json.parseToJsonElement(abiFile.readText(Charsets.UTF_8)).jsonArray,
         byteCode = byteCodeFile?.let {
             Json.parseToJsonElement(it.readText(Charsets.UTF_8)).jsonObject.get("object")?.jsonPrimitive?.content
@@ -22,24 +23,24 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
         import kotlinx.serialization.ExperimentalSerializationApi
 
         @OptIn(ExperimentalSerializationApi::class)
-        class HelloWorld(
+        class $contractName(
             eth: Eth,
             baseTransaction: Transaction = Transaction()
         ) : Contract(eth, baseTransaction) {
 
             companion object {
 
-                //deployment
+                // deployment
                 ${generateDeployment()}
 
-                //selectors
+                // selectors
                 ${generateSelectors()}
             }
 
             // events
             ${generateEvents()}
             
-            //functions
+            // functions
             ${generateFunctions()}
 
         }
@@ -62,7 +63,7 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
         val stringBuilderParams = StringBuilder()
         abi.filter { it.jsonObject["type"]?.jsonPrimitive?.content == "constructor"
         }.filter {
-            stringBuilder.append("val byteCode = \"$byteCode\".hexToByteArray()\n")
+            stringBuilder.append("val byteCode = \"0x$byteCode\".hexToByteArray()\n")
             stringBuilder.append("fun deploy(eth:Eth, from: Address, ")
             stringBuilderParams.append("val params = Data(\nbyteCode + DataEncoder()\n")
             it.jsonObject["inputs"]?.jsonArray?.forEach {
@@ -115,8 +116,9 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
         }.forEach {
             val eventName = it.jsonObject["name"]?.jsonPrimitive?.content
             if (eventName != null) {
-                stringBuilderEventDecoders.append("Event${eventName.replaceFirstChar(Char::titlecase)}::decoder,")
-                stringBuilder.append("data class Event${eventName.replaceFirstChar(Char::titlecase)}(")
+                val eventClassName = "Event${eventName.replaceFirstChar(Char::titlecase)}"
+                stringBuilderEventDecoders.append("$eventClassName::decoder,")
+                stringBuilder.append("data class $eventClassName(")
                 stringBuilder.append("val eventSelector: AbiBytes32,")
                 val stringBuilderTopics = StringBuilder()
                 stringBuilderTopics.append("eventSelector,")
@@ -134,28 +136,29 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
                             stringBuilderTopics.append("$name,")
                             stringBuilderArguments.append("$name = log.topics.get(${index++}).value,")
                         } else {
-                            stringBuilder.append("val $name: Abi${type.replaceFirstChar(Char::titlecase)},")
-                            stringBuilderValues.append("val $name = decoder.next<Abi${type.replaceFirstChar(Char::titlecase)}>()\n")
+                            val abiTypeName = "Abi${type.replaceFirstChar(Char::titlecase)}"
+                            stringBuilder.append("val $name: $abiTypeName,")
+                            stringBuilderValues.append("val $name = decoder.next<$abiTypeName>()\n")
                             stringBuilderArguments.append("$name = $name,")
                         }
                     }
                 }
                 if (stringBuilder.last() == ',') stringBuilder.deleteAt(stringBuilder.length - 1)
-                if (stringBuilderEventDecoders.last() == ',') stringBuilderEventDecoders.deleteAt(stringBuilderEventDecoders.length - 1)
                 if (stringBuilderTopics.last() == ',') stringBuilderTopics.deleteAt(stringBuilderTopics.length - 1)
-                if (stringBuilderArguments.last() == ',') stringBuilderArguments.deleteAt(stringBuilderArguments.length - 1)
                 stringBuilder.append(") : Event(topics = listOf(${stringBuilderTopics})) {\n")
                 stringBuilder.append("companion object {\n")
                 stringBuilder.append("fun decoder(log: Log): Event? {\n")
                 stringBuilder.append("return checkEvent(log, event$eventName)?.let {\n")
                 stringBuilder.append("val decoder = DataDecoder(log.data!!)\n")
                 stringBuilder.append(stringBuilderValues)
-                stringBuilder.append("EventModified(\n")
+                stringBuilder.append("$eventClassName(\n")
+                if (stringBuilderArguments.last() == ',') stringBuilderArguments.deleteAt(stringBuilderArguments.length - 1)
                 stringBuilder.append(stringBuilderArguments)
                 stringBuilder.append(")\n}\n}\n}\n}\n")
-                stringBuilder.append("override val listOfEventDecoders: List<(Log) -> Event?> = listOf($stringBuilderEventDecoders)")
             }
         }
+        if (!stringBuilderEventDecoders.isEmpty() && stringBuilderEventDecoders.last() == ',') stringBuilderEventDecoders.deleteAt(stringBuilderEventDecoders.length - 1)
+        stringBuilder.append("override val listOfEventDecoders: List<(Log) -> Event?> = listOf($stringBuilderEventDecoders)")
         return stringBuilder.toString()
     }
 
@@ -166,9 +169,11 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
         }.forEach {
             val functionName = it.jsonObject["name"]?.jsonPrimitive?.content
             if (functionName != null) {
+                val stateMutability =
+                    it.jsonObject["stateMutability"]?.jsonPrimitive?.content?.let { StateMutability.valueOf(it) }
                 val outputs = it.jsonObject["outputs"]?.jsonArray
                 var resultClassName: String? = null
-                if (outputs?.isEmpty() != true) {
+                if (outputs?.isEmpty() != true && stateMutability != StateMutability.payable && stateMutability != StateMutability.nonpayable) {
                     resultClassName = "Results${functionName.replaceFirstChar(Char::titlecase)}"
                     stringBuilder.append("data class $resultClassName(\n")
                     outputs?.forEach {
@@ -180,8 +185,6 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
                     }
                     stringBuilder.append(")\n")
                 }
-                val stateMutability =
-                    it.jsonObject["stateMutability"]?.jsonPrimitive?.content?.let { StateMutability.valueOf(it) }
                 val stringBuilderParams = StringBuilder()
                 val inputs = it.jsonObject["inputs"]?.jsonArray
                 if (stateMutability == StateMutability.payable || stateMutability == StateMutability.nonpayable) {
@@ -238,6 +241,4 @@ class CodeGenerator(private val abi: JsonArray, private val byteCode: String? = 
         }
         return stringBuilder.toString()
     }
-
-
 }

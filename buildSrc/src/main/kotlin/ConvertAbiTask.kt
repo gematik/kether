@@ -10,9 +10,13 @@ open class ConvertAbiTask : DefaultTask() {
     @TaskAction
     fun convert() {
         val abiFiles = collectAbiFiles(inputDir)
+//        val abiFiles = listOf(project.file("src/main/kotlin/de/gematik/kether/contracts/Storage.abi"))
         abiFiles.forEach {
+            println("Proessing ${it.name} ...")
+            val byteCodeFile = File(it.absolutePath.dropLast(4) + ".bytecode")
+            val code = codegen.CodeGenerator(abiFile = it, byteCodeFile = if(byteCodeFile.exists()) byteCodeFile else null).generateCode()
             val outfile = File(it.absolutePath.dropLast(4) + ".kt")
-            outfile.writeText("Contract goes here!")
+            outfile.writeText(code)
         }
     }
 

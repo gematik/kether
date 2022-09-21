@@ -19,6 +19,8 @@ repositories {
 dependencies {
     implementation(gradleApi())
     implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("junit:junit:4.13.1")
 }
 
 
