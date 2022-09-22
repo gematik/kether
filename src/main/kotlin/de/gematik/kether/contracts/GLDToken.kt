@@ -26,9 +26,9 @@ class GLDToken(
             return deploy(eth, from, params)
         }
 
-        // selectors
-        val eventApproval = "Approval(address,address,uint256)".keccak().copyOfRange(0, 4)
-        val eventTransfer = "Transfer(address,address,uint256)".keccak().copyOfRange(0, 4)
+        // 4 byte selectors (functions) and topics (events)
+        val eventApproval = Data32("Approval(address,address,uint256)".keccak())
+        val eventTransfer = Data32("Transfer(address,address,uint256)".keccak())
         val functionAllowance = "allowance(address,address)".keccak().copyOfRange(0, 4)
         val functionApprove = "approve(address,uint256)".keccak().copyOfRange(0, 4)
         val functionBalanceOf = "balanceOf(address)".keccak().copyOfRange(0, 4)

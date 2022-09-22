@@ -3,6 +3,7 @@ package de.gematik.kether
 import de.gematik.kether.contracts.ContractCommonTest
 import de.gematik.kether.contracts.ContractHelloWorldTests
 import de.gematik.kether.contracts.ContractStorageTests
+import de.gematik.kether.contracts.ContractGLDTokenTests
 import de.gematik.kether.extensions.CryptoTests
 import de.gematik.kether.rpc.EthPubSubTests
 import de.gematik.kether.rpc.EthTests
@@ -24,7 +25,8 @@ import org.junit.runners.Suite
     EthPubSubTests::class,
     ContractCommonTest::class,
     ContractStorageTests::class,
-    ContractHelloWorldTests::class
+    ContractHelloWorldTests::class,
+    ContractGLDTokenTests::class
 )
 
 class TestSuite {

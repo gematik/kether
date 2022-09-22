@@ -5,6 +5,7 @@ import de.gematik.kether.codegen.Storage
 import de.gematik.kether.types.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
+import java.math.BigInteger
 
 /**
  * Created by rk on 02.08.2022.
@@ -12,6 +13,9 @@ import org.junit.Test
  */
 @ExperimentalSerializationApi
 class EthTests {
+    val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+    val storageAddress = Address("0x218d5fe2E168656eBDE49e7a4A3C97E699D0be78")
+
     val eth = Eth(Rpc("http:ethereum1.lab.gematik.de:8547"))
 
     @Test
@@ -28,8 +32,7 @@ class EthTests {
 
     @Test
     fun ethGetBalance() {
-        val rpcResponse =
-            eth.ethGetBalance(Address("0xB389e2Ac92361c81481aFeF1cBF29881005996a3"), Quantity(Block.latest.value))
+        val rpcResponse = eth.ethGetBalance(account2Address, Quantity(Block.latest.value))
         assert(rpcResponse.result!!.value >= 0)
     }
 
@@ -46,15 +49,46 @@ class EthTests {
     }
 
     @Test
+    fun ethEstimateGas() {
+        val rpcResponse = eth.ethEstimateGas(
+            Transaction(
+                to = storageAddress,
+                from = account2Address,
+                data = DataEncoder()
+                    .encodeSelector(Storage.functionStore)
+                    .encode(BigInteger.TEN)
+                    .build()
+            ),
+        )
+        assert(rpcResponse.result!!.value >= 0)
+    }
+
+    @Test
     fun ethCall() {
         val rpcResponse = eth.ethCall(
             Transaction(
-                to = Address("0x218d5fe2E168656eBDE49e7a4A3C97E699D0be78"),
+                to = storageAddress,
                 data = DataEncoder().encodeSelector(Storage.functionRetrieve).build()
             ),
             Quantity(Block.latest.value)
         )
         assert(rpcResponse.result!!.value.size >= 0)
+    }
+
+    @Test
+    fun ethSendTransTransaction() {
+        val num = BigInteger.TEN
+        val rpcResponse = eth.ethSendTransaction(
+            Transaction(
+                to = storageAddress,
+                from = account2Address,
+                data = DataEncoder()
+                    .encodeSelector(Storage.functionStore)
+                    .encode(num)
+                    .build()
+            )
+        )
+        assert(rpcResponse.result!!.value.size == 32) // transaction hash of size 32
     }
 
 }

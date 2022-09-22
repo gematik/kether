@@ -16,7 +16,7 @@ class Storage(
     companion object {
         // deployment
 // deployment data (bytecode) not available
-// selectors
+// 4 byte selectors (functions) and topics (events)
         val functionInc = "inc()".keccak().copyOfRange(0, 4)
         val functionRetrieve = "retrieve()".keccak().copyOfRange(0, 4)
         val functionStore = "store(uint256)".keccak().copyOfRange(0, 4)

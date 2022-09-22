@@ -10,6 +10,7 @@ enum class RpcMethods {
     eth_getBalance,
     eth_accounts,
     eth_gasPrice,
+    eth_estimateGas,
     eth_call,
     eth_sendTransaction,
     eth_getTransactionReceipt,

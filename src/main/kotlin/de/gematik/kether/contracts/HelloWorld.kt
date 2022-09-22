@@ -26,8 +26,8 @@ class HelloWorld(
             return deploy(eth, from, params)
         }
 
-        // selectors
-        val eventModified = "Modified(string,string,string,string)".keccak().copyOfRange(0, 4)
+        // 4 byte selectors (functions) and topics (events)
+        val eventModified = Data32("Modified(string,string,string,string)".keccak())
         val functionGreeting = "greeting()".keccak().copyOfRange(0, 4)
         val functionKill = "kill()".keccak().copyOfRange(0, 4)
         val functionNewGreeting = "newGreeting(string)".keccak().copyOfRange(0, 4)

@@ -1,12 +1,10 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.abi.AbiBytes32
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.types.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -47,13 +45,16 @@ abstract class Contract(
     companion object {
         fun deploy(eth: Eth, from: Address, params: Data): TransactionReceipt {
             return runBlocking {
+                val transaction = Transaction(
+                    from = from,
+                    value = Quantity(0),
+                    gasPrice = Quantity(0),
+                    data = params
+                )
+                val estimatedGas = eth.ethEstimateGas(transaction).result!!.value
                 eth.ethSendTransaction(
-                    Transaction(
-                        from = from,
-                        gas = Quantity(1000000),
-                        value = Quantity(0),
-                        gasPrice = Quantity(0),
-                        data = params
+                    transaction.copy(
+                        gas = Quantity(estimatedGas)
                     )
                 ).result?.let {
                     val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
@@ -64,8 +65,8 @@ abstract class Contract(
             }
         }
 
-        fun checkEvent(log: Log, eventType: ByteArray): Log? {
-            return if (log.topics?.get(0)?.value.contentEquals(eventType)) {
+        fun checkEvent(log: Log, eventType: Data32): Log? {
+            return if (log.topics?.get(0)?.value.contentEquals(eventType.value)) {
                 log
             } else {
                 null
@@ -88,9 +89,12 @@ abstract class Contract(
 
     suspend fun transact(params: Data): TransactionReceipt {
         return withTimeout(10000) {
+            val transaction = baseTransaction.copy(
+                data = params
+            )
             eth.ethSendTransaction(
-                baseTransaction.copy(
-                    data = params
+                transaction.copy(
+                    gas = Quantity(eth.ethEstimateGas(transaction).result!!.value)
                 )
             ).let {
                 it.result ?: throw Exception(it.error?.message ?: "undefined error")
@@ -106,16 +110,20 @@ abstract class Contract(
         }
     }
 
-    suspend fun subscribe(eventSelector: AbiBytes32): String? {
+    suspend fun subscribe(eventSelector: Data32): String? {
         return eth.ethSubscribe(
             SubscriptionTypes.logs,
             Filter(
-                fromBlock = Quantity.blockLatest,
-                toBlock = Quantity.blockLatest,
-                address = baseTransaction.to,
-                topics = arrayOf(Data32(eventSelector))
+//                fromBlock = Quantity.blockLatest,
+//                toBlock = Quantity.blockLatest,
+//                address = baseTransaction.to,
+//                topics = arrayOf(eventSelector.toTopic())
             )
         ).result
+    }
+
+    suspend fun unsubscribe(subscriptionId: String) : Boolean {
+        return eth.ethUnsubscribe(subscriptionId).result?:false
     }
 
 }

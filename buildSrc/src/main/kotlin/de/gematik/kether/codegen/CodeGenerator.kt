@@ -8,8 +8,15 @@ import java.io.File
  * gematik.de
  */
 @OptIn(ExperimentalStdlibApi::class)
-class CodeGenerator(private val packageName: String, private val contractName: String, private val abi: JsonArray, private val byteCode: String? = null) {
-    constructor(packageName: String, abiFile: File, byteCodeFile: File?) : this(packageName, abiFile.name.substring(0, abiFile.name.indexOfLast{it=='.'} ),
+class CodeGenerator(
+    private val packageName: String,
+    private val contractName: String,
+    private val abi: JsonArray,
+    private val byteCode: String? = null
+) {
+    constructor(packageName: String, abiFile: File, byteCodeFile: File?) : this(
+        packageName,
+        abiFile.name.substring(0, abiFile.name.indexOfLast { it == '.' }),
         abi = Json.parseToJsonElement(abiFile.readText(Charsets.UTF_8)).jsonArray,
         byteCode = byteCodeFile?.let {
             Json.parseToJsonElement(it.readText(Charsets.UTF_8)).jsonObject.get("object")?.jsonPrimitive?.content
@@ -35,7 +42,7 @@ class CodeGenerator(private val packageName: String, private val contractName: S
                 // deployment
                 ${generateDeployment()}
 
-                // selectors
+                // 4 byte selectors (functions) and topics (events)
                 ${generateSelectors()}
             }
 
@@ -60,10 +67,11 @@ class CodeGenerator(private val packageName: String, private val contractName: S
     }
 
     private fun generateDeployment(): String {
-        byteCode?:return "// deployment data (bytecode) not available"
+        byteCode ?: return "// deployment data (bytecode) not available"
         val stringBuilder = StringBuilder()
         val stringBuilderParams = StringBuilder()
-        abi.filter { it.jsonObject["type"]?.jsonPrimitive?.content == "constructor"
+        abi.filter {
+            it.jsonObject["type"]?.jsonPrimitive?.content == "constructor"
         }.filter {
             stringBuilder.append("val byteCode = \"0x$byteCode\".hexToByteArray()\n")
             stringBuilder.append("fun deploy(eth:Eth, from: Address, ")
@@ -89,22 +97,33 @@ class CodeGenerator(private val packageName: String, private val contractName: S
     private fun generateSelectors(): String {
         val stringBuilder = StringBuilder()
         abi.filter {
-            val type = it.jsonObject["type"]?.jsonPrimitive?.content
-            type == "event" || type == "function"
+            it.jsonObject["type"]?.jsonPrimitive?.content == "event"
         }.forEach {
-            val type = it.jsonObject["type"]?.jsonPrimitive?.content
-            val name = it.jsonObject["name"]?.jsonPrimitive?.content
-            if (type != null && name != null) {
-                stringBuilder.append("val $type${name.replaceFirstChar(Char::titlecase)} = \"$name(")
+            it.jsonObject["name"]?.jsonPrimitive?.content?.let { name ->
+                stringBuilder.append("val event${name.replaceFirstChar(Char::titlecase)} = Data32(\"$name(")
                 it.jsonObject["inputs"]?.jsonArray?.forEach {
                     it.jsonObject.get("type")?.jsonPrimitive?.content?.let {
                         stringBuilder.append(it + ",")
                     }
                 }
-                if (stringBuilder.last() == ',') {
-                    stringBuilder.deleteAt(stringBuilder.length - 1)
+                if (stringBuilder.last() == ',') {stringBuilder.deleteAt(stringBuilder.length - 1)}
+                stringBuilder.append(")\".keccak())\n"
+                )
+            }
+        }
+        abi.filter {
+            it.jsonObject["type"]?.jsonPrimitive?.content == "function"
+        }.forEach {
+            it.jsonObject["name"]?.jsonPrimitive?.content?.let { name ->
+                stringBuilder.append("val function${name.replaceFirstChar(Char::titlecase)} = \"$name(")
+                it.jsonObject["inputs"]?.jsonArray?.forEach {
+                    it.jsonObject.get("type")?.jsonPrimitive?.content?.let {
+                        stringBuilder.append(it + ",")
+                    }
                 }
-                stringBuilder.append(")\".keccak().copyOfRange(0, 4)\n")
+                if (stringBuilder.last() == ',') {stringBuilder.deleteAt(stringBuilder.length - 1)}
+                stringBuilder.append(")\".keccak().copyOfRange(0, 4)\n"
+                )
             }
         }
         return stringBuilder.toString()
@@ -159,7 +178,9 @@ class CodeGenerator(private val packageName: String, private val contractName: S
                 stringBuilder.append(")\n}\n}\n}\n}\n")
             }
         }
-        if (!stringBuilderEventDecoders.isEmpty() && stringBuilderEventDecoders.last() == ',') stringBuilderEventDecoders.deleteAt(stringBuilderEventDecoders.length - 1)
+        if (!stringBuilderEventDecoders.isEmpty() && stringBuilderEventDecoders.last() == ',') stringBuilderEventDecoders.deleteAt(
+            stringBuilderEventDecoders.length - 1
+        )
         stringBuilder.append("override val listOfEventDecoders: List<(Log) -> Event?> = listOf($stringBuilderEventDecoders)")
         return stringBuilder.toString()
     }

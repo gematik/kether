@@ -1,10 +1,6 @@
 package de.gematik.kether.rpc
 
-import de.gematik.kether.extensions.toRLP
 import de.gematik.kether.types.*
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -80,6 +76,17 @@ class Eth(val rpc: Rpc) : Closeable {
     }
 
     /**
+     * Makes a call or transaction, which won’t be added to the blockchain and returns the used gas, which can be used for estimating the used gas.
+     * @param Transaction - where from field is optional and nonce field is ommited.
+     * @param Quantity - (optional) Integer block number, or the string 'latest', 'earliest' or 'pending', see the default block parameter.Returns the current price per gas in wei.
+     * @return current price per gas in wei.
+     * @throws Exception if failure
+     */
+    fun ethEstimateGas(transaction: Transaction, blockNumber: Quantity? = null) : RpcResponse<Quantity> {
+        return deserialize(rpc.call(RpcRequest(RpcMethods.eth_estimateGas, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))))
+    }
+
+    /**
      * Returns the balance of the account of given address.
      * @return current balance in wei.
      * @throws Exception if failure
@@ -90,15 +97,17 @@ class Eth(val rpc: Rpc) : Closeable {
 
     /**
      * Executes a new message call immediately without creating a transaction on the block chain.
-     * @return the return value of executed contract.
+     * @param Transaction - where from field is optional and nonce field is ommited.
+     * @param Quantity - (optional) Integer block number, or the string 'latest', 'earliest' or 'pending', see the default block parameter     * @return the return value of executed contract.
      * @throws Exception if failure
      */
-    fun ethCall(transaction: Transaction, blockNumber: Quantity) : RpcResponse<Data> {
-        return deserialize(rpc.call(RpcRequest(RpcMethods.eth_call, listOf(transaction, blockNumber))))
+    fun ethCall(transaction: Transaction, blockNumber: Quantity? = null) : RpcResponse<Data> {
+        return deserialize(rpc.call(RpcRequest(RpcMethods.eth_call, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))))
     }
 
     /**
      * Creates new message call transaction or a contract creation, if the data field contains code.
+     * @param Transaction - with optional condition field.
      * @return transaction hash, or the zero hash if the transaction is not yet available.
      * @throws Exception if failure
      */
@@ -108,6 +117,7 @@ class Eth(val rpc: Rpc) : Closeable {
 
     /**
      * Returns the receipt of a transaction by transaction hash. Note That the receipt is available even for pending transactions.
+     * @param Data32 - transaction hash
      * @return transaction hash, or the zero hash if the transaction is not yet available.
      * @throws Exception if failure
      */

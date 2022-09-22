@@ -68,8 +68,8 @@ class EthPubSubTests {
                 eth.notifications.collect {
                     if (it.params.result is Log) {
                         val log = it.params.result as Log
-                        assert(log.topics?.get(0)?.value?.contentEquals("Modified(string,string,string,string)".toTopic()) == true)
-                        assert(log.topics?.get(2)?.value?.contentEquals(newGreeting.toTopic()) == true)
+                        assert(log.topics?.get(0)?.value?.contentEquals(HelloWorld.eventModified.value) == true)
+                        assert(log.topics?.get(2)?.value?.contentEquals(newGreeting.toTopic().value) == true)
                         cancel()
                         helloWorld.cancel()
                     }
