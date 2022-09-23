@@ -1,6 +1,5 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.codegen.GLDToken
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.types.Address
@@ -83,6 +82,4 @@ class ContractGLDTokenTests {
             assert(balance == 1E16.toLong())
         }
     }
-
-
 }

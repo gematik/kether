@@ -1,6 +1,5 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.codegen.Storage
 import de.gematik.kether.rpc.Eth
 import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.types.*

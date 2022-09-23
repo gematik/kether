@@ -3,6 +3,7 @@ package de.gematik.kether.types
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.rpc.DataSerializer
 import de.gematik.kether.rpc.QuantitySerializer
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import java.math.BigInteger
 
@@ -10,6 +11,7 @@ import java.math.BigInteger
  * Created by rk on 03.08.2022.
  * gematik.de
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable(with = DataSerializer::class)
 open class Data {
     private var value: ByteArray

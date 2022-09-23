@@ -16,7 +16,7 @@ open class ConvertAbiTask : DefaultTask() {
         abiFiles.forEach {
             println("Proessing ${it.name} ...")
             val byteCodeFile = File(it.absolutePath.dropLast(4) + ".bytecode")
-            val code = CodeGenerator ("de.gematik.kether.codegen", abiFile = it, byteCodeFile = if(byteCodeFile.exists()) byteCodeFile else null).generateCode()
+            val code = CodeGenerator ("de.gematik.kether.contracts", abiFile = it, byteCodeFile = if(byteCodeFile.exists()) byteCodeFile else null).generateCode()
             val outfile = File(it.absolutePath.dropLast(4) + ".kt")
             outfile.writeText(code)
         }

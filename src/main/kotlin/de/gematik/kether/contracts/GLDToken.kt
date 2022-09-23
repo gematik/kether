@@ -1,7 +1,6 @@
-package de.gematik.kether.codegen
+package de.gematik.kether.contracts
 
 import de.gematik.kether.abi.*
-import de.gematik.kether.contracts.Contract
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.keccak
 import de.gematik.kether.rpc.Eth
