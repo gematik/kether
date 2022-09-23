@@ -27,7 +27,7 @@ class Storage(
     // functions
     suspend fun inc(): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionInc).build()
+            .encode(Data4(functionInc)).build()
         return transact(params)
     }
 
@@ -37,7 +37,7 @@ class Storage(
 
     fun retrieve(): ResultsRetrieve {
         val params = DataEncoder()
-            .encodeSelector(functionRetrieve).build()
+            .encode(Data4(functionRetrieve)).build()
         val decoder = DataDecoder(call(params))
         return ResultsRetrieve(
             decoder
@@ -47,7 +47,7 @@ class Storage(
 
     suspend fun store(num: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionStore)
+            .encode(Data4(functionStore))
             .encode(num).build()
         return transact(params)
     }

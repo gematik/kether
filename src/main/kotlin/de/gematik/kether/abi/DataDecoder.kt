@@ -1,6 +1,7 @@
 package de.gematik.kether.abi
 
 import de.gematik.kether.eth.types.Data
+import de.gematik.kether.eth.types.Data4
 import java.math.BigInteger
 
 /**
@@ -13,10 +14,10 @@ class DataDecoder(val data: Data) {
     inline fun <reified T> next(): T {
         return when (T::class) {
             AbiSelector::class -> {
-                check(pos == 0 && data.toByteArray().size >=32)
+                check(pos == 0 && data.toByteArray().size >=4)
                 val bytes = data.toByteArray().copyOfRange(0, 4)
                 pos+=4
-                bytes as T
+                AbiSelector(bytes) as T
             }
             AbiUint256::class -> {
                 check(data.toByteArray().size - pos >= 32)
@@ -35,7 +36,7 @@ class DataDecoder(val data: Data) {
                 check(data.toByteArray().size - pos >= 32)
                 val bytes = data.toByteArray().copyOfRange(pos, pos + 32)
                 pos += 32
-                bytes as T
+                AbiBytes32(bytes) as T
             }
             else -> {
                 error("data type not supported: ${T::class.qualifiedName}")

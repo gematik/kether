@@ -2,6 +2,7 @@ package de.gematik.kether.contracts
 
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Address
+import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
@@ -57,10 +58,10 @@ class ContractStorageTests {
                     to = storageAddress
                 )
             )
-            val random = Random.Default.nextLong()
-            val receipt = storage.store(num = random.toBigInteger())
+            val random = Quantity(Random.Default.nextLong())
+            val receipt = storage.store(num = random)
             assert(receipt.isSuccess)
-            val result = storage.retrieve().value.toLong()
+            val result = storage.retrieve().value
             assert(random == result)
         }
     }

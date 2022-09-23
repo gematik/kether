@@ -46,6 +46,12 @@ open class Data {
 }
 
 @Serializable(with = DataSerializer::class)
+class Data4 : Data {
+    constructor(hexString: String) : super(4, hexString)
+    constructor(byteArray: ByteArray) : super(4, byteArray)
+}
+
+@Serializable(with = DataSerializer::class)
 class Data20 : Data {
     constructor(hexString: String) : super(20, hexString)
     constructor(byteArray: ByteArray) : super(20, byteArray)

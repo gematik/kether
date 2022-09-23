@@ -47,9 +47,9 @@ class HelloWorld(
                     val oldGreeting = decoder.next<AbiString>()
                     val newGreeting = decoder.next<AbiString>()
                     EventModified(
-                        eventSelector = log.topics!!.get(0).toByteArray(),
-                        oldGreetingIdx = log.topics.get(1).toByteArray(),
-                        newGreetingIdx = log.topics.get(2).toByteArray(),
+                        eventSelector = log.topics!!.get(0),
+                        oldGreetingIdx = log.topics.get(1),
+                        newGreetingIdx = log.topics.get(2),
                         oldGreeting = oldGreeting,
                         newGreeting = newGreeting
                     )
@@ -67,7 +67,7 @@ class HelloWorld(
 
     fun greeting(): ResultsGreeting {
         val params = DataEncoder()
-            .encodeSelector(functionGreeting).build()
+            .encode(Data4(functionGreeting)).build()
         val decoder = DataDecoder(call(params))
         return ResultsGreeting(
             decoder
@@ -77,13 +77,13 @@ class HelloWorld(
 
     suspend fun kill(): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionKill).build()
+            .encode(Data4(functionKill)).build()
         return transact(params)
     }
 
     suspend fun newGreeting(_greet: AbiString): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionNewGreeting)
+            .encode(Data4(functionNewGreeting))
             .encode(_greet).build()
         return transact(params)
     }

@@ -54,9 +54,9 @@ class GLDToken(
                     val decoder = DataDecoder(log.data!!)
                     val value = decoder.next<AbiUint256>()
                     EventApproval(
-                        eventSelector = log.topics!!.get(0).toByteArray(),
-                        owner = log.topics.get(1).toByteArray(),
-                        spender = log.topics.get(2).toByteArray(),
+                        eventSelector = log.topics!!.get(0),
+                        owner = log.topics.get(1),
+                        spender = log.topics.get(2),
                         value = value
                     )
                 }
@@ -76,9 +76,9 @@ class GLDToken(
                     val decoder = DataDecoder(log.data!!)
                     val value = decoder.next<AbiUint256>()
                     EventTransfer(
-                        eventSelector = log.topics!!.get(0).toByteArray(),
-                        from = log.topics.get(1).toByteArray(),
-                        to = log.topics.get(2).toByteArray(),
+                        eventSelector = log.topics!!.get(0),
+                        from = log.topics.get(1),
+                        to = log.topics.get(2),
                         value = value
                     )
                 }
@@ -95,7 +95,7 @@ class GLDToken(
 
     fun allowance(owner: AbiAddress, spender: AbiAddress): ResultsAllowance {
         val params = DataEncoder()
-            .encodeSelector(functionAllowance)
+            .encode(Data4(functionAllowance))
             .encode(owner)
             .encode(spender).build()
         val decoder = DataDecoder(call(params))
@@ -107,7 +107,7 @@ class GLDToken(
 
     suspend fun approve(spender: AbiAddress, amount: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionApprove)
+            .encode(Data4(functionApprove))
             .encode(spender)
             .encode(amount).build()
         return transact(params)
@@ -119,7 +119,7 @@ class GLDToken(
 
     fun balanceOf(account: AbiAddress): ResultsBalanceOf {
         val params = DataEncoder()
-            .encodeSelector(functionBalanceOf)
+            .encode(Data4(functionBalanceOf))
             .encode(account).build()
         val decoder = DataDecoder(call(params))
         return ResultsBalanceOf(
@@ -134,7 +134,7 @@ class GLDToken(
 
     fun decimals(): ResultsDecimals {
         val params = DataEncoder()
-            .encodeSelector(functionDecimals).build()
+            .encode(Data4(functionDecimals)).build()
         val decoder = DataDecoder(call(params))
         return ResultsDecimals(
             decoder
@@ -144,7 +144,7 @@ class GLDToken(
 
     suspend fun decreaseAllowance(spender: AbiAddress, subtractedValue: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionDecreaseAllowance)
+            .encode(Data4(functionDecreaseAllowance))
             .encode(spender)
             .encode(subtractedValue).build()
         return transact(params)
@@ -152,7 +152,7 @@ class GLDToken(
 
     suspend fun increaseAllowance(spender: AbiAddress, addedValue: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionIncreaseAllowance)
+            .encode(Data4(functionIncreaseAllowance))
             .encode(spender)
             .encode(addedValue).build()
         return transact(params)
@@ -164,7 +164,7 @@ class GLDToken(
 
     fun name(): ResultsName {
         val params = DataEncoder()
-            .encodeSelector(functionName).build()
+            .encode(Data4(functionName)).build()
         val decoder = DataDecoder(call(params))
         return ResultsName(
             decoder
@@ -178,7 +178,7 @@ class GLDToken(
 
     fun symbol(): ResultsSymbol {
         val params = DataEncoder()
-            .encodeSelector(functionSymbol).build()
+            .encode(Data4(functionSymbol)).build()
         val decoder = DataDecoder(call(params))
         return ResultsSymbol(
             decoder
@@ -192,7 +192,7 @@ class GLDToken(
 
     fun totalSupply(): ResultsTotalSupply {
         val params = DataEncoder()
-            .encodeSelector(functionTotalSupply).build()
+            .encode(Data4(functionTotalSupply)).build()
         val decoder = DataDecoder(call(params))
         return ResultsTotalSupply(
             decoder
@@ -202,7 +202,7 @@ class GLDToken(
 
     suspend fun transfer(to: AbiAddress, amount: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionTransfer)
+            .encode(Data4(functionTransfer))
             .encode(to)
             .encode(amount).build()
         return transact(params)
@@ -210,7 +210,7 @@ class GLDToken(
 
     suspend fun transferFrom(from: AbiAddress, to: AbiAddress, amount: AbiUint256): TransactionReceipt {
         val params = DataEncoder()
-            .encodeSelector(functionTransferFrom)
+            .encode(Data4(functionTransferFrom))
             .encode(from)
             .encode(to)
             .encode(amount).build()

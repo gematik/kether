@@ -13,19 +13,18 @@ class DataEncoder() {
     private val chunks = mutableListOf<Chunk>()
     private var containsSelector = false
 
-    fun encodeSelector(selector: ByteArray): DataEncoder {
+    fun encode(selector: AbiSelector): DataEncoder {
         require(chunks.isEmpty()) { "selector must be first element" }
-        require(selector.size == 4) { "selector must be 4 bytes long" }
-        chunks.add(Chunk(false, selector))
+        chunks.add(Chunk(false, selector.toByteArray()))
         containsSelector = true
         return this
     }
 
     fun encode(int: AbiUint256): DataEncoder {
-        var b = int.toByteArray()
+        var b = int.toBigInteger().toByteArray()
         check(b.size <= 32)
         b = b.copyInto(
-            if (int.signum() < 0) ByteArray(32, { (-1).toByte() }) else ByteArray(32),
+            if (int.toBigInteger().signum() < 0) ByteArray(32, { (-1).toByte() }) else ByteArray(32),
             32 - b.size
         )
         chunks.add(Chunk(false, b))

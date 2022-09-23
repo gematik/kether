@@ -57,8 +57,8 @@ class EthTests {
                 to = storageAddress,
                 from = account2Address,
                 data = DataEncoder()
-                    .encodeSelector(Storage.functionStore)
-                    .encode(BigInteger.TEN)
+                    .encode(Data4(Storage.functionStore))
+                    .encode(Quantity(10))
                     .build()
             ),
         )
@@ -70,22 +70,22 @@ class EthTests {
         val rpcResponse = eth.ethCall(
             Transaction(
                 to = storageAddress,
-                data = DataEncoder().encodeSelector(Storage.functionRetrieve).build()
+                data = DataEncoder().encode(Data4(Storage.functionRetrieve)).build()
             ),
             Quantity(Tag.latest)
         )
-        assert(DataDecoder(rpcResponse.result!!).next<BigInteger>() != BigInteger.ZERO)
+        assert(DataDecoder(rpcResponse.result!!).next<Quantity>() != Quantity(0))
     }
 
     @Test
     fun ethSendTransTransaction() {
-        val num = BigInteger.TEN
+        val num = Quantity(10)
         val rpcResponse = eth.ethSendTransaction(
             Transaction(
                 to = storageAddress,
                 from = account2Address,
                 data = DataEncoder()
-                    .encodeSelector(Storage.functionStore)
+                    .encode(Data4(Storage.functionStore))
                     .encode(num)
                     .build()
             )

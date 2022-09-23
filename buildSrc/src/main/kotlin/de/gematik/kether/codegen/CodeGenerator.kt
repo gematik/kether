@@ -144,7 +144,7 @@ class CodeGenerator(
                 stringBuilderTopics.append("eventSelector,")
                 val stringBuilderValues = StringBuilder()
                 val stringBuilderArguments = StringBuilder()
-                stringBuilderArguments.append("eventSelector=log.topics!!.get(0).toByteArray(),")
+                stringBuilderArguments.append("eventSelector=log.topics!!.get(0),")
                 var index = 1
                 it.jsonObject["inputs"]?.jsonArray?.forEach {
                     val type = it.jsonObject.get("type")?.jsonPrimitive?.content
@@ -154,7 +154,7 @@ class CodeGenerator(
                         if (isIndexed == true) {
                             stringBuilder.append("val $name: AbiBytes32,")
                             stringBuilderTopics.append("$name,")
-                            stringBuilderArguments.append("$name = log.topics.get(${index++}).toByteArray(),")
+                            stringBuilderArguments.append("$name = log.topics.get(${index++}),")
                         } else {
                             val abiTypeName = "Abi${type.replaceFirstChar(Char::titlecase)}"
                             stringBuilder.append("val $name: $abiTypeName,")
@@ -212,11 +212,11 @@ class CodeGenerator(
                 if (stateMutability == StateMutability.payable || stateMutability == StateMutability.nonpayable) {
                     stringBuilder.append("suspend fun $functionName(")
                     stringBuilderParams.append(
-                        "val params = DataEncoder()\n.encodeSelector(function${
+                        "val params = DataEncoder()\n.encode(Data4(function${
                             functionName.replaceFirstChar(
                                 Char::titlecase
                             )
-                        })"
+                        }))"
                     )
                     inputs?.forEach {
                         val name = it.jsonObject.get("name")?.jsonPrimitive?.content
@@ -234,11 +234,11 @@ class CodeGenerator(
                 } else {
                     stringBuilder.append("fun $functionName(")
                     stringBuilderParams.append(
-                        "val params = DataEncoder()\n.encodeSelector(function${
+                        "val params = DataEncoder()\n.encode(Data4(function${
                             functionName.replaceFirstChar(
                                 Char::titlecase
                             )
-                        })"
+                        }))"
                     )
                     inputs?.forEach {
                         val name = it.jsonObject.get("name")?.jsonPrimitive?.content

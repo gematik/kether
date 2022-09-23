@@ -14,6 +14,11 @@ class Quantity {
     private val value: BigInteger?
     private val tag: Tag?
 
+    constructor(bytes: ByteArray) {
+        this.value = BigInteger(bytes)
+        tag = null
+    }
+
     constructor(value: BigInteger) {
         this.value = value
         tag = null

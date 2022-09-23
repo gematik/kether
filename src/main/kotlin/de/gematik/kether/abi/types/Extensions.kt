@@ -8,5 +8,5 @@ import de.gematik.kether.extensions.keccak
  * gematik.de
  */
 
-fun AbiBytes32.toTopic() = Data32(keccak())
+fun AbiBytes32.toTopic() = Data32(toByteArray().keccak())
 fun AbiString.toTopic() = Data32(keccak())

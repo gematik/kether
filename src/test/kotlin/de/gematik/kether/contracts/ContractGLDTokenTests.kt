@@ -2,6 +2,7 @@ package de.gematik.kether.contracts
 
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Address
+import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.eth.types.Transaction
 import kotlinx.coroutines.cancel
@@ -28,7 +29,7 @@ class ContractGLDTokenTests {
         fun gldTokenDeploy() {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
-                val initialSupply = 1E18.toLong().toBigInteger()
+                val initialSupply = Quantity(1E18.toLong())
                 val receipt = GLDToken.deploy(ethereum1, account2Address, initialSupply)
                 val gLDTokenAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
@@ -48,8 +49,8 @@ class ContractGLDTokenTests {
 
     @Test
     fun gldTokenBalanceOf() {
-        val balance = gldToken.balanceOf(account2Address).value.toLong()
-        assert(balance == 1E18.toLong())
+        val balance = gldToken.balanceOf(account2Address).value
+        assert(balance == Quantity(1E18.toLong()))
     }
 
     @Test
@@ -76,10 +77,10 @@ class ContractGLDTokenTests {
                     }
                 }
             }
-            val receipt = gldToken.transfer(account1Address, 1E16.toLong().toBigInteger())
+            val receipt = gldToken.transfer(account1Address, Quantity(1E16.toLong()))
             assert(receipt.isSuccess)
-            val balance = gldToken.balanceOf(account1Address).value.toLong()
-            assert(balance == 1E16.toLong())
+            val balance = gldToken.balanceOf(account1Address).value
+            assert(balance == Quantity(1E16.toLong()))
         }
     }
 }
