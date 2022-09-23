@@ -12,31 +12,47 @@ import java.math.BigInteger
  */
 @Serializable(with = DataSerializer::class)
 open class Data {
-     var value: ByteArray
-        private set
+    private var value: ByteArray
 
-    constructor(length: Int? = null, hexString: String? = null) {
-        if(hexString==null){
-            value = ByteArray(0)
-        }else{
-            val len = if(length==null) (hexString.length+1)/2-1 else length
-            value = hexString.hexToByteArray(len)
-        }
+    protected constructor (length: Int, hexString: String) {
+        require((hexString.length + 1) / 2 - 1 <= length) { "hexString too long" }
+        value = hexString.hexToByteArray(length)
+    }
+
+    protected constructor (length: Int, byteArray: ByteArray) {
+        require(byteArray.size <= length) { "byteArray too long" }
+        value = byteArray.copyOf(length)
+    }
+
+    constructor(hexString: String) {
+        value = hexString.hexToByteArray()
     }
 
     constructor(byteArray: ByteArray) {
         value = byteArray
     }
+
+    override operator fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (!(other is Data)) return false
+        return other.toByteArray().equals(value)
+    }
+
+    override fun hashCode(): Int {
+        return value.contentHashCode()
+    }
+
+    fun toByteArray() = value
 }
 
 @Serializable(with = DataSerializer::class)
 class Data20 : Data {
     constructor(hexString: String) : super(20, hexString)
-    constructor(byteArray: ByteArray) : super(byteArray.copyOf(20))
+    constructor(byteArray: ByteArray) : super(20, byteArray)
 }
 
 @Serializable(with = DataSerializer::class)
 class Data32 : Data {
     constructor(hexString: String) : super(32, hexString)
-    constructor(byteArray: ByteArray) : super(byteArray.copyOf(32))
+    constructor(byteArray: ByteArray) : super(32, byteArray)
 }

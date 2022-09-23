@@ -1,7 +1,7 @@
 package de.gematik.kether.rpc
 
-import de.gematik.kether.types.Block
 import de.gematik.kether.types.Quantity
+import de.gematik.kether.types.Tag
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -23,18 +23,16 @@ class QuantitySerializer : KSerializer<Quantity> {
 
     @InternalSerializationApi
     override fun serialize(encoder: Encoder, value: Quantity) {
-        val string = if (value.value < 0) Block.values().find { it.value == value.value }?.name ?: error(
-            "invalid tag"
-        ) else "0x${value.value.toString(16)}"
+        val string = if (value.isTag()) value.toTag().name  else "0x${value.toBigInteger().toString(16)}"
         encoder.encodeString(string)
     }
 
     override fun deserialize(decoder: Decoder): Quantity {
         val string = decoder.decodeString()
-        return Quantity(if(string.lowercase().startsWith("0x")) {
-            string.drop(2).toLong(16)
+        return if(string.lowercase().startsWith("0x")) {
+            Quantity(string.drop(2).toBigInteger(16))
         } else {
-            Block.valueOf(string).value
-        })
+            Quantity(Tag.valueOf(string))
+        }
     }
 }

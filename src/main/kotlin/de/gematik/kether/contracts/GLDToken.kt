@@ -21,7 +21,7 @@ class GLDToken(
         fun deploy(eth: Eth, from: Address, initialSupply: AbiUint256): TransactionReceipt {
             val params = Data(
                 byteCode + DataEncoder()
-                    .encode(initialSupply).build().value
+                    .encode(initialSupply).build().toByteArray()
             )
             return deploy(eth, from, params)
         }
@@ -55,9 +55,9 @@ class GLDToken(
                     val decoder = DataDecoder(log.data!!)
                     val value = decoder.next<AbiUint256>()
                     EventApproval(
-                        eventSelector = log.topics!!.get(0).value,
-                        owner = log.topics.get(1).value,
-                        spender = log.topics.get(2).value,
+                        eventSelector = log.topics!!.get(0).toByteArray(),
+                        owner = log.topics.get(1).toByteArray(),
+                        spender = log.topics.get(2).toByteArray(),
                         value = value
                     )
                 }
@@ -77,9 +77,9 @@ class GLDToken(
                     val decoder = DataDecoder(log.data!!)
                     val value = decoder.next<AbiUint256>()
                     EventTransfer(
-                        eventSelector = log.topics!!.get(0).value,
-                        from = log.topics.get(1).value,
-                        to = log.topics.get(2).value,
+                        eventSelector = log.topics!!.get(0).toByteArray(),
+                        from = log.topics.get(1).toByteArray(),
+                        to = log.topics.get(2).toByteArray(),
                         value = value
                     )
                 }

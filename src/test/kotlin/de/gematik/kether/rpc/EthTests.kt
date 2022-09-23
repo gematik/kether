@@ -1,5 +1,6 @@
 package de.gematik.kether.rpc
 
+import de.gematik.kether.abi.DataDecoder
 import de.gematik.kether.abi.DataEncoder
 import de.gematik.kether.codegen.Storage
 import de.gematik.kether.types.*
@@ -21,19 +22,19 @@ class EthTests {
     @Test
     fun ethBlockNumber() {
         val rpcResponse = eth.ethBlockNumber()
-        assert(rpcResponse.result!!.value > 0)
+        assert(rpcResponse.result!! > Quantity(0))
     }
 
     @Test
     fun ethChainId() {
         val rpcResponse = eth.ethChainId()
-        assert(rpcResponse.result!!.value > 0)
+        assert(rpcResponse.result!! > Quantity(0))
     }
 
     @Test
     fun ethGetBalance() {
-        val rpcResponse = eth.ethGetBalance(account2Address, Quantity(Block.latest.value))
-        assert(rpcResponse.result!!.value >= 0)
+        val rpcResponse = eth.ethGetBalance(account2Address, Quantity(Tag.latest))
+        assert(rpcResponse.result!! > Quantity(0))
     }
 
     @Test
@@ -45,7 +46,7 @@ class EthTests {
     @Test
     fun ethGasPrice() {
         val rpcResponse = eth.ethGasPrice()
-        assert(rpcResponse.result!!.value >= 0)
+        assert(rpcResponse.result!! >= Quantity(0))
     }
 
     @Test
@@ -60,7 +61,7 @@ class EthTests {
                     .build()
             ),
         )
-        assert(rpcResponse.result!!.value >= 0)
+        assert(rpcResponse.result!! >= Quantity(0))
     }
 
     @Test
@@ -70,9 +71,9 @@ class EthTests {
                 to = storageAddress,
                 data = DataEncoder().encodeSelector(Storage.functionRetrieve).build()
             ),
-            Quantity(Block.latest.value)
+            Quantity(Tag.latest)
         )
-        assert(rpcResponse.result!!.value.size >= 0)
+        assert(DataDecoder(rpcResponse.result!!).next<BigInteger>() != BigInteger.ZERO)
     }
 
     @Test
@@ -88,7 +89,7 @@ class EthTests {
                     .build()
             )
         )
-        assert(rpcResponse.result!!.value.size == 32) // transaction hash of size 32
+        assert(rpcResponse.result!! != Data32("0x0")) // transaction hash not equal null hash
     }
 
 }

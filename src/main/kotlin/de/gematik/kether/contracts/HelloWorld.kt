@@ -21,7 +21,7 @@ class HelloWorld(
         fun deploy(eth: Eth, from: Address, _greet: AbiString): TransactionReceipt {
             val params = Data(
                 byteCode + DataEncoder()
-                    .encode(_greet).build().value
+                    .encode(_greet).build().toByteArray()
             )
             return deploy(eth, from, params)
         }
@@ -48,9 +48,9 @@ class HelloWorld(
                     val oldGreeting = decoder.next<AbiString>()
                     val newGreeting = decoder.next<AbiString>()
                     EventModified(
-                        eventSelector = log.topics!!.get(0).value,
-                        oldGreetingIdx = log.topics.get(1).value,
-                        newGreetingIdx = log.topics.get(2).value,
+                        eventSelector = log.topics!!.get(0).toByteArray(),
+                        oldGreetingIdx = log.topics.get(1).toByteArray(),
+                        newGreetingIdx = log.topics.get(2).toByteArray(),
                         oldGreeting = oldGreeting,
                         newGreeting = newGreeting
                     )

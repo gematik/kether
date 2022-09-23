@@ -25,7 +25,7 @@ class DataSerializer : KSerializer<Data> {
 
     @InternalSerializationApi
     override fun serialize(encoder: Encoder, value: Data) {
-        encoder.encodeString(value.value.toHex())
+        encoder.encodeString(value.toByteArray().toHex())
     }
 
     override fun deserialize(decoder: Decoder): Data {

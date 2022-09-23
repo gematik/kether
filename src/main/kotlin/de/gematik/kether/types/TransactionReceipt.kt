@@ -1,5 +1,7 @@
 package de.gematik.kether.types
 
+import java.math.BigInteger
+
 /**
  * Created by rk on 14.09.2022.
  * gematik.de
@@ -22,6 +24,6 @@ data class TransactionReceipt(
     val transactionIndex: Quantity,
     val type: Quantity? = null
 ){
-    val isSuccess = status.value == 1L
+    val isSuccess = status.toBigInteger() == BigInteger.ONE
 }
 

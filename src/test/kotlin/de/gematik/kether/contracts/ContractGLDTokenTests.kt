@@ -32,7 +32,7 @@ class ContractGLDTokenTests {
                 val initialSupply = 1E18.toLong().toBigInteger()
                 val receipt = GLDToken.deploy(ethereum1, account2Address, initialSupply)
                 val gLDTokenAddress = receipt.contractAddress!!
-                assert(receipt.status.value == 1L)
+                assert(receipt.isSuccess)
                 gldToken = GLDToken(
                     ethereum1,
                     Transaction(to = gLDTokenAddress, from = account2Address)

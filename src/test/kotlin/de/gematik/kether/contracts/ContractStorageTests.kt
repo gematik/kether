@@ -39,11 +39,11 @@ class ContractStorageTests {
                     to = storageAddress
                 )
             )
-            val start = storage.retrieve().value.toInt()
+            val start = storage.retrieve().value
             val receipt = storage.inc()
-            assert(receipt.status.value == 1L)
-            val end = storage.retrieve().value.toInt()
-            assert(end == start + 1)
+            assert(receipt.isSuccess)
+            val end = storage.retrieve().value
+            assert(end == start.inc())
         }
     }
 
@@ -59,7 +59,7 @@ class ContractStorageTests {
             )
             val random = Random.Default.nextLong()
             val receipt = storage.store(num = random.toBigInteger())
-            assert(receipt.status.value == 1L)
+            assert(receipt.isSuccess)
             val result = storage.retrieve().value.toLong()
             assert(random == result)
         }

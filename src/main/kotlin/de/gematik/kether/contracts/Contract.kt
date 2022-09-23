@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
+import java.math.BigInteger
 
 /**
  * Created by rk on 09.09.2022.
@@ -30,7 +31,7 @@ abstract class Contract(
             eth.notifications.collect {
                 if (it.params.result is Log) {
                     val log = it.params.result
-                    if (log.address?.value.contentEquals(baseTransaction.to?.value)) {
+                    if (log.address?.toByteArray().contentEquals(baseTransaction.to?.toByteArray())) {
                         listOfEventDecoders.forEach {
                             it(log)?.let {
                                 _events.emit(it)
@@ -47,14 +48,14 @@ abstract class Contract(
             return runBlocking {
                 val transaction = Transaction(
                     from = from,
-                    value = Quantity(0),
-                    gasPrice = Quantity(0),
+                    value = Quantity(BigInteger.ZERO),
+                    gasPrice = Quantity(BigInteger.ZERO),
                     data = params
                 )
-                val estimatedGas = eth.ethEstimateGas(transaction).result!!.value
+                val estimatedGas = eth.ethEstimateGas(transaction).result
                 eth.ethSendTransaction(
                     transaction.copy(
-                        gas = Quantity(estimatedGas)
+                        gas = estimatedGas
                     )
                 ).result?.let {
                     val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
@@ -66,7 +67,7 @@ abstract class Contract(
         }
 
         fun checkEvent(log: Log, eventType: Data32): Log? {
-            return if (log.topics?.get(0)?.value.contentEquals(eventType.value)) {
+            return if (log.topics?.get(0)?.toByteArray().contentEquals(eventType.toByteArray())) {
                 log
             } else {
                 null
@@ -83,7 +84,7 @@ abstract class Contract(
             baseTransaction.copy(
                 data = params
             ),
-            Quantity(Block.latest.value)
+            Quantity(Tag.latest)
         ).result ?: throw Exception("no result")
     }
 
@@ -94,7 +95,7 @@ abstract class Contract(
             )
             eth.ethSendTransaction(
                 transaction.copy(
-                    gas = Quantity(eth.ethEstimateGas(transaction).result!!.value)
+                    gas = eth.ethEstimateGas(transaction).result
                 )
             ).let {
                 it.result ?: throw Exception(it.error?.message ?: "undefined error")
@@ -114,10 +115,10 @@ abstract class Contract(
         return eth.ethSubscribe(
             SubscriptionTypes.logs,
             Filter(
-//                fromBlock = Quantity.blockLatest,
-//                toBlock = Quantity.blockLatest,
-//                address = baseTransaction.to,
-//                topics = arrayOf(eventSelector.toTopic())
+                fromBlock = Quantity(Tag.latest),
+                toBlock = Quantity(Tag.latest),
+                address = baseTransaction.to,
+                topics = arrayOf(eventSelector)
             )
         ).result
     }

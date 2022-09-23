@@ -39,7 +39,7 @@ class ContractHelloWorldTests {
     fun helloWorldDeploy() {
         runBlocking {
             val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
-            assert(receipt.status.value == 1L)
+            assert(receipt.isSuccess)
             val helloWorld = HelloWorld(
                 ethereum1,
                 Transaction(
@@ -75,7 +75,7 @@ class ContractHelloWorldTests {
             val greeting = "Greetings at ${Date()}"
             launch {
                 val receipt = helloWorld.newGreeting(_greet = greeting)
-                assert(receipt.status.value == 1L)
+                assert(receipt.isSuccess)
             }
             launch {
                 helloWorld.eth.ethSubscribe(SubscriptionTypes.logs)

@@ -82,13 +82,13 @@ fun Byte.toRLP(): ByteArray = byteArrayOf(this).toRLP()
  * Converts [Quantity] to RLP coded byte array.
  * @return RLP coded byte array
  */
-fun Quantity.toRLP(): ByteArray = value.toBigInteger().toByteArray().toRLP()
+fun Quantity.toRLP(): ByteArray = toBigInteger().toByteArray().toRLP()
 
 /**
  * Converts [Quantity] to RLP coded byte array.
  * @return RLP coded byte array
  */
-fun Data.toRLP(): ByteArray = value.toRLP()
+fun Data.toRLP(): ByteArray = toByteArray().toRLP()
 
 
 fun Transaction.toRLP(isEIP1559: Boolean = false): ByteArray {

@@ -33,7 +33,7 @@ class DataEncoder() {
     }
 
     fun encode(address: AbiAddress): DataEncoder {
-        var b = address.value
+        var b = address.toByteArray()
         check(b.size <= 32)
         b = b.copyInto(ByteArray(32),32 - b.size)
         chunks.add(Chunk(false, b))

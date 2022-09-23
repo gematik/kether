@@ -84,7 +84,7 @@ class CodeGenerator(
                     stringBuilderParams.append(".encode($name)")
                 }
             }
-            stringBuilderParams.append(".build().value\n)\n")
+            stringBuilderParams.append(".build().toByteArray()\n)\n")
             if (stringBuilder.last() == ',') stringBuilder.deleteAt(stringBuilder.length - 1)
             stringBuilder.append("): TransactionReceipt {\n")
             stringBuilder.append(stringBuilderParams)
@@ -145,7 +145,7 @@ class CodeGenerator(
                 stringBuilderTopics.append("eventSelector,")
                 val stringBuilderValues = StringBuilder()
                 val stringBuilderArguments = StringBuilder()
-                stringBuilderArguments.append("eventSelector=log.topics!!.get(0).value,")
+                stringBuilderArguments.append("eventSelector=log.topics!!.get(0).toByteArray(),")
                 var index = 1
                 it.jsonObject["inputs"]?.jsonArray?.forEach {
                     val type = it.jsonObject.get("type")?.jsonPrimitive?.content
@@ -155,7 +155,7 @@ class CodeGenerator(
                         if (isIndexed == true) {
                             stringBuilder.append("val $name: AbiBytes32,")
                             stringBuilderTopics.append("$name,")
-                            stringBuilderArguments.append("$name = log.topics.get(${index++}).value,")
+                            stringBuilderArguments.append("$name = log.topics.get(${index++}).toByteArray(),")
                         } else {
                             val abiTypeName = "Abi${type.replaceFirstChar(Char::titlecase)}"
                             stringBuilder.append("val $name: $abiTypeName,")
