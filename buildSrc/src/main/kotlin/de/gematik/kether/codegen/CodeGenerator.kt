@@ -24,11 +24,10 @@ class CodeGenerator(
 
     private val template = """package $packageName
         import de.gematik.kether.abi.*
-        import de.gematik.kether.contracts.Contract
+        import de.gematik.kether.eth.Eth
+        import de.gematik.kether.eth.types.*
         import de.gematik.kether.extensions.hexToByteArray
         import de.gematik.kether.extensions.keccak
-        import de.gematik.kether.rpc.Eth
-        import de.gematik.kether.types.*
         import kotlinx.serialization.ExperimentalSerializationApi
 
         @OptIn(ExperimentalSerializationApi::class)

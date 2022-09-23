@@ -1,8 +1,10 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.rpc.Eth
+import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.types.Address
+import de.gematik.kether.eth.types.SubscriptionTypes
+import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
-import de.gematik.kether.types.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

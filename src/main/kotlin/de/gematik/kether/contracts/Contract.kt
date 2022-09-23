@@ -1,7 +1,7 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.rpc.Eth
-import de.gematik.kether.types.*
+import de.gematik.kether.eth.*
+import de.gematik.kether.eth.types.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

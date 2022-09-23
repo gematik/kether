@@ -1,6 +1,6 @@
-package de.gematik.kether.types
+package de.gematik.kether.eth.types
 
-import de.gematik.kether.rpc.BigIntegerSerializer
+import de.gematik.kether.eth.serializer.BigIntegerSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import java.math.BigInteger

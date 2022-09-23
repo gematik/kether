@@ -1,7 +1,5 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.eth.types
 
-import de.gematik.kether.types.Quantity
-import de.gematik.kether.types.Tag
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer

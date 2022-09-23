@@ -1,4 +1,4 @@
-package de.gematik.kether.types
+package de.gematik.kether.eth.types
 
 /**
  * Created by rk on 16.08.2022.

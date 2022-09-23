@@ -1,7 +1,7 @@
 package de.gematik.kether.abi
 
+import de.gematik.kether.eth.types.Data32
 import de.gematik.kether.extensions.keccak
-import de.gematik.kether.types.Data32
 
 /**
  * Created by rk on 07.09.2022.

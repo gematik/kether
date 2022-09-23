@@ -1,9 +1,9 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.eth.serializer
 
+import de.gematik.kether.eth.types.Data
+import de.gematik.kether.eth.types.Data20
+import de.gematik.kether.eth.types.Data32
 import de.gematik.kether.extensions.toHex
-import de.gematik.kether.types.Data
-import de.gematik.kether.types.Data20
-import de.gematik.kether.types.Data32
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer

@@ -1,8 +1,9 @@
 package de.gematik.kether.contracts
 
 import de.gematik.kether.abi.*
+import de.gematik.kether.eth.types.Address
+import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.extensions.toRLP
-import de.gematik.kether.types.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
 import java.math.BigInteger

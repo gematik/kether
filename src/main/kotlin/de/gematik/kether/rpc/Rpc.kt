@@ -1,6 +1,9 @@
 package de.gematik.kether.rpc
 
-import de.gematik.kether.types.*
+import de.gematik.kether.eth.types.*
+import de.gematik.kether.rpc.types.RpcNotification
+import de.gematik.kether.rpc.types.RpcRequest
+import de.gematik.kether.rpc.types.RpcResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -74,15 +77,15 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
 
     suspend fun subscribe(type: SubscriptionTypes, filter: Filter = Filter()): RpcResponse<String> {
             when (type) {
-                SubscriptionTypes.newHeads -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name)))
-                SubscriptionTypes.logs -> send(RpcRequest(RpcMethods.eth_subscribe, listOf(type.name, filter)))
+                SubscriptionTypes.newHeads -> send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name)))
+                SubscriptionTypes.logs -> send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name, filter)))
             }
             @Suppress("UNCHECKED_CAST")
             return responses.first() as RpcResponse<String>
     }
 
     suspend fun unsubscribe(subscriptionId: String): RpcResponse<Boolean> {
-        send(RpcRequest(RpcMethods.eth_unsubscribe, listOf(subscriptionId)))
+        send(RpcRequest(EthMethods.eth_unsubscribe, listOf(subscriptionId)))
         @Suppress("UNCHECKED_CAST")
         return responses.first() as RpcResponse<Boolean>
     }

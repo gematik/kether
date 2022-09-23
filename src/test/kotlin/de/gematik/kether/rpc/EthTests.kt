@@ -3,7 +3,8 @@ package de.gematik.kether.rpc
 import de.gematik.kether.abi.DataDecoder
 import de.gematik.kether.abi.DataEncoder
 import de.gematik.kether.contracts.Storage
-import de.gematik.kether.types.*
+import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.types.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
 import java.math.BigInteger

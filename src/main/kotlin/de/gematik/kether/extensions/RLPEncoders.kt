@@ -1,8 +1,8 @@
 package de.gematik.kether.extensions
 
-import de.gematik.kether.types.Data
-import de.gematik.kether.types.Quantity
-import de.gematik.kether.types.Transaction
+import de.gematik.kether.eth.types.Data
+import de.gematik.kether.eth.types.Quantity
+import de.gematik.kether.eth.types.Transaction
 import java.math.BigInteger
 
 /**

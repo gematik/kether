@@ -1,4 +1,4 @@
-package de.gematik.kether.rpc
+package de.gematik.kether.eth.serializer
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer

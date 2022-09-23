@@ -1,4 +1,4 @@
-package de.gematik.kether.types
+package de.gematik.kether.eth.types
 
 import java.math.BigInteger
 

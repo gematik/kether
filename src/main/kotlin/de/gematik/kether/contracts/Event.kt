@@ -1,4 +1,4 @@
-package de.gematik.kether.types
+package de.gematik.kether.contracts
 
 import de.gematik.kether.abi.AbiBytes32
 
