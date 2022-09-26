@@ -1,5 +1,6 @@
 package de.gematik.kether.abi
 
+import de.gematik.kether.abi.types.*
 import de.gematik.kether.eth.types.Data
 import java.nio.charset.Charset
 

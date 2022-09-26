@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
+    id("de.gematik.kether.codegen") version "1.0-SNAPSHOT"
 }
 
 group = "de.gematik.kether"
@@ -24,4 +25,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.11")
 }
 
-tasks.register<de.gematik.kether.codegen.ConvertAbiTask>("convertABI")
+configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {
+    packageName.set("de.gematik.kether.contracts")
+}
+

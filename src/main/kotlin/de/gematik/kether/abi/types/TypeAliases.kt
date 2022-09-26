@@ -1,4 +1,4 @@
-package de.gematik.kether.abi
+package de.gematik.kether.abi.types
 
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Data32

@@ -1,6 +1,6 @@
 package de.gematik.kether.rpc
 
-import de.gematik.kether.abi.toTopic
+import de.gematik.kether.abi.types.toTopic
 import de.gematik.kether.contracts.HelloWorld
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.*

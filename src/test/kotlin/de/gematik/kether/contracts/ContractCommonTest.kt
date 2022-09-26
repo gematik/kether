@@ -19,7 +19,7 @@ class ContractCommonTest {
         val function = DataEncoder().encode(Data4(selector)).build()
         val decoder = DataDecoder(function)
         assert(
-            decoder.next<AbiSelector>().toByteArray().contentEquals(selector))
+            decoder.next<Data4>().toByteArray().contentEquals(selector))
     }
 
     @Test
@@ -27,7 +27,7 @@ class ContractCommonTest {
         val num = Quantity(1)
         val result = DataEncoder().encode(num).build()
         val decoder = DataDecoder(result)
-        assert(decoder.next<AbiUint256>() == num)
+        assert(decoder.next<Quantity>() == num)
     }
 
     @Test
@@ -35,7 +35,7 @@ class ContractCommonTest {
         val string = "test"
         val result = DataEncoder().encode(string).build()
         val decoder = DataDecoder(result)
-        assert(decoder.next<AbiString>() == string)
+        assert(decoder.next<String>() == string)
     }
 
     @Test

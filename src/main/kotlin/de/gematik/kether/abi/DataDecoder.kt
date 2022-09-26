@@ -1,7 +1,7 @@
 package de.gematik.kether.abi
 
+import de.gematik.kether.abi.types.*
 import de.gematik.kether.eth.types.Data
-import de.gematik.kether.eth.types.Data4
 import java.math.BigInteger
 
 /**
