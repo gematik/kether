@@ -42,7 +42,7 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
     internal val notifications = _notifications.asSharedFlow()
 
     private val _responses = MutableSharedFlow<RpcResponse<*>>()
-    private val responses = _responses.asSharedFlow()
+    internal val responses = _responses.asSharedFlow()
 
     private lateinit var ws: WebSocket
 
@@ -75,22 +75,6 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
         }
     }
 
-    suspend fun subscribe(type: SubscriptionTypes, filter: Filter = Filter()): RpcResponse<String> {
-            when (type) {
-                SubscriptionTypes.newHeads -> send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name)))
-                SubscriptionTypes.logs -> send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name, filter)))
-            }
-            @Suppress("UNCHECKED_CAST")
-            return responses.first() as RpcResponse<String>
-    }
-
-    suspend fun unsubscribe(subscriptionId: String): RpcResponse<Boolean> {
-        send(RpcRequest(EthMethods.eth_unsubscribe, listOf(subscriptionId)))
-        @Suppress("UNCHECKED_CAST")
-        return responses.first() as RpcResponse<Boolean>
-    }
-
-
     fun call(request: RpcRequest): Response {
         request.id = id++
         val jsonString = json.encodeToString(request)
@@ -117,5 +101,6 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
 
         }.onFailure { logger.debug(it.message) }.getOrThrow()
     }
+
 
 }

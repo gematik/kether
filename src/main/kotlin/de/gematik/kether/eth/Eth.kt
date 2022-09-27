@@ -4,6 +4,7 @@ import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import de.gematik.kether.rpc.types.RpcRequest
 import de.gematik.kether.rpc.types.RpcResponse
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -32,6 +33,7 @@ class Eth(val rpc: Rpc) : Closeable {
      * ```
      */
     val notifications = rpc.notifications
+    val responses = rpc.responses
 
     /**
      * Closes the used resources.
@@ -137,7 +139,12 @@ class Eth(val rpc: Rpc) : Closeable {
      * @throws Exception if failure
      */
     suspend fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
-        return rpc.subscribe(type, filter)
+        when (type) {
+            SubscriptionTypes.newHeads -> rpc.send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name)))
+            SubscriptionTypes.logs -> rpc.send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name, filter)))
+        }
+        @Suppress("UNCHECKED_CAST")
+        return responses.first() as RpcResponse<String>
     }
 
     /**
@@ -147,7 +154,9 @@ class Eth(val rpc: Rpc) : Closeable {
      * @throws Exception if failure
      */
     suspend fun ethUnsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
-        return rpc.unsubscribe(subscriptionId)
+        rpc.send(RpcRequest(EthMethods.eth_unsubscribe, listOf(subscriptionId)))
+        @Suppress("UNCHECKED_CAST")
+        return responses.first() as RpcResponse<Boolean>
     }
 
     private inline fun <reified T> deserialize(response: Response): RpcResponse<T> {
@@ -156,7 +165,7 @@ class Eth(val rpc: Rpc) : Closeable {
     }
 
     private inline fun <reified T> deserialize(json: String): RpcResponse<T> {
-        logger.debug (json.replace("\\s".toRegex(), ""))
+        de.gematik.kether.eth.logger.debug (json.replace("\\s".toRegex(), ""))
         return Json.decodeFromString(json)
     }
 
