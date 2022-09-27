@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
+    `maven-publish`
     id("de.gematik.kether.codegen") version "1.0-SNAPSHOT"
 }
 
@@ -28,4 +29,14 @@ dependencies {
 configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {
     packageName.set("de.gematik.kether.contracts")
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
+}
+
+
 
