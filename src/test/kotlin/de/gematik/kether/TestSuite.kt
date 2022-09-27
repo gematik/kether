@@ -5,9 +5,9 @@ import de.gematik.kether.contracts.ContractHelloWorldTests
 import de.gematik.kether.contracts.ContractStorageTests
 import de.gematik.kether.contracts.ContractGLDTokenTests
 import de.gematik.kether.extensions.CryptoTests
-import de.gematik.kether.rpc.EthPubSubTests
-import de.gematik.kether.rpc.EthTests
-import de.gematik.kether.rpc.SerializerTests
+import de.gematik.kether.eth.EthPubSubTests
+import de.gematik.kether.eth.EthTests
+import de.gematik.kether.eth.SerializerTests
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.runner.RunWith
 import org.junit.runners.Suite

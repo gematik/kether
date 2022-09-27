@@ -47,7 +47,7 @@ return checkEvent(log, eventApproval)?.let {
 val decoder = DataDecoder(log.data!!)
 val value = decoder.next<AbiUint256>()
 EventApproval(
-eventSelector=log.topics!!.get(0),owner = log.topics.get(1),spender = log.topics.get(2),value = value)
+eventSelector=log.topics!!.get(0),owner = log.topics!!.get(1),spender = log.topics!!.get(2),value = value)
 }
 }
 }
@@ -59,7 +59,7 @@ return checkEvent(log, eventTransfer)?.let {
 val decoder = DataDecoder(log.data!!)
 val value = decoder.next<AbiUint256>()
 EventTransfer(
-eventSelector=log.topics!!.get(0),from = log.topics.get(1),to = log.topics.get(2),value = value)
+eventSelector=log.topics!!.get(0),from = log.topics!!.get(1),to = log.topics!!.get(2),value = value)
 }
 }
 }

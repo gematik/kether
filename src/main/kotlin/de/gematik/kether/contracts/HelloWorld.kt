@@ -39,7 +39,7 @@ val decoder = DataDecoder(log.data!!)
 val oldGreeting = decoder.next<AbiString>()
 val newGreeting = decoder.next<AbiString>()
 EventModified(
-eventSelector=log.topics!!.get(0),oldGreetingIdx = log.topics.get(1),newGreetingIdx = log.topics.get(2),oldGreeting = oldGreeting,newGreeting = newGreeting)
+eventSelector=log.topics!!.get(0),oldGreetingIdx = log.topics!!.get(1),newGreetingIdx = log.topics!!.get(2),oldGreeting = oldGreeting,newGreeting = newGreeting)
 }
 }
 }

@@ -7,6 +7,8 @@ import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.junit.AfterClass
+import org.junit.BeforeClass
 import org.junit.Test
 import kotlin.random.Random
 
@@ -16,30 +18,41 @@ import kotlin.random.Random
  */
 @ExperimentalSerializationApi
 class ContractStorageTests {
-    val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
-    val storageAddress = Address("0x218d5fe2E168656eBDE49e7a4A3C97E699D0be78")
 
-    val ethereum1 = Eth(Rpc("http:ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
+    companion object {
+        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+        lateinit var storage: Storage
+
+        @BeforeClass
+        @JvmStatic
+        fun storageDeploy() {
+            runBlocking {
+                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
+                val receipt = Storage.deploy(ethereum1, account2Address)
+                val storageAddress = receipt.contractAddress!!
+                assert(receipt.isSuccess)
+                storage = Storage(
+                    ethereum1,
+                    Transaction(to = storageAddress, from = account2Address)
+                )
+            }
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun cancelStorage() {
+            storage.cancel()
+        }
+    }
 
     @Test
     fun storageRetrieve() {
-        val storage = Storage(
-            ethereum1,
-            Transaction(to = storageAddress)
-        )
         storage.retrieve()
     }
 
     @Test
     fun storageIncAndRetrieve() {
         runBlocking {
-            val storage = Storage(
-                ethereum1,
-                Transaction(
-                    from = account2Address,
-                    to = storageAddress
-                )
-            )
             val start = storage.retrieve().value
             val receipt = storage.inc()
             assert(receipt.isSuccess)
@@ -51,13 +64,6 @@ class ContractStorageTests {
     @Test
     fun storageStoreAndRetrieve() {
         runBlocking {
-            val storage = Storage(
-                ethereum1,
-                Transaction(
-                    from = account2Address,
-                    to = storageAddress
-                )
-            )
             val random = Quantity(Random.Default.nextLong())
             val receipt = storage.store(num = random)
             assert(receipt.isSuccess)
