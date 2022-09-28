@@ -33,7 +33,7 @@ class ContractCommonTest {
         }.onFailure {
             message = it.message
         }
-        assert(message=="data decoding error: remaining data too short (pos: 0, limit: 20, type: Quantity")
+        assert(message=="data decoding error: remaining data too short (pos: 0, limit: 20, type: Quantity)")
     }
 
     @Test
