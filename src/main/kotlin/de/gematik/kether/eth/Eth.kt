@@ -47,37 +47,37 @@ class Eth(val rpc: Rpc) : Closeable {
     /**
      * Returns the number of most recent block.
      * @return number of the current block.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethBlockNumber() : RpcResponse<Quantity> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_blockNumber, emptyList())))
+    fun ethBlockNumber() : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_blockNumber, emptyList())).result()
     }
 
     /**
      * Returns the EIP155 chain ID used for transaction signing at the current best block. Null is returned if not available.
      * @return EIP155 Chain ID, or null if not available.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethChainId() : RpcResponse<Quantity> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_chainId, emptyList())))
+    fun ethChainId() : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_chainId, emptyList())).result()
     }
 
     /**
      * Returns the balance of the account of given address.
      * @return current balance in wei.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethGetBalance(account: Address, blockNumber: Quantity) : RpcResponse<Quantity> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_getBalance, listOf(account, blockNumber))))
+    fun ethGetBalance(account: Address, blockNumber: Quantity) : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_getBalance, listOf(account, blockNumber))).result()
     }
 
     /**
      * Returns the current price per gas in wei.
      * @return current price per gas in wei.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethGasPrice() : RpcResponse<Quantity> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_gasPrice, emptyList())))
+    fun ethGasPrice() : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_gasPrice, emptyList())).result()
     }
 
     /**
@@ -85,49 +85,49 @@ class Eth(val rpc: Rpc) : Closeable {
      * @param Transaction - where from field is optional and nonce field is ommited.
      * @param Quantity - (optional) Integer block number, or the string 'latest', 'earliest' or 'pending', see the default block parameter.Returns the current price per gas in wei.
      * @return current price per gas in wei.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethEstimateGas(transaction: Transaction, blockNumber: Quantity? = null) : RpcResponse<Quantity> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_estimateGas, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))))
+    fun ethEstimateGas(transaction: Transaction, blockNumber: Quantity? = null) : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_estimateGas, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))).result()
     }
 
     /**
      * Returns the balance of the account of given address.
      * @return current balance in wei.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethAccounts() : RpcResponse<List<Address>> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_accounts, emptyList())))
+    fun ethAccounts() : List<Address> {
+        return rpc.call(RpcRequest(EthMethods.eth_accounts, emptyList())).result()
     }
 
     /**
      * Executes a new message call immediately without creating a transaction on the block chain.
      * @param Transaction - where from field is optional and nonce field is ommited.
      * @param Quantity - (optional) Integer block number, or the string 'latest', 'earliest' or 'pending', see the default block parameter     * @return the return value of executed contract.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethCall(transaction: Transaction, blockNumber: Quantity? = null) : RpcResponse<Data> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_call, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))))
+    fun ethCall(transaction: Transaction, blockNumber: Quantity? = null) : Data {
+        return rpc.call(RpcRequest(EthMethods.eth_call, if(blockNumber!=null) listOf(transaction, blockNumber) else listOf(transaction))).result()
     }
 
     /**
      * Creates new message call transaction or a contract creation, if the data field contains code.
      * @param Transaction - with optional condition field.
      * @return transaction hash, or the zero hash if the transaction is not yet available.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethSendTransaction(transaction: Transaction) : RpcResponse<Data32> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_sendTransaction, listOf(transaction))))
+    fun ethSendTransaction(transaction: Transaction) : Data32 {
+        return rpc.call(RpcRequest(EthMethods.eth_sendTransaction, listOf(transaction))).result()
     }
 
     /**
      * Returns the receipt of a transaction by transaction hash. Note That the receipt is available even for pending transactions.
      * @param Data32 - transaction hash
      * @return transaction hash, or the zero hash if the transaction is not yet available.
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    fun ethGetTransactionReceipt(hash: Data32) : RpcResponse<TransactionReceipt> {
-        return deserialize(rpc.call(RpcRequest(EthMethods.eth_getTransactionReceipt, listOf(hash))))
+    fun ethGetTransactionReceipt(hash: Data32) : TransactionReceipt {
+        return rpc.call(RpcRequest(EthMethods.eth_getTransactionReceipt, listOf(hash))).result()
     }
 
     /**
@@ -136,37 +136,27 @@ class Eth(val rpc: Rpc) : Closeable {
      * and subscription ID will be sent to a client.
      * @param type subscription type - either [SubscriptionTypes.newHeads] or [SubscriptionTypes.logs]
      * @return subscription id
-     * @throws Exception if failure
+     * @throws RpcRpcException if failure
      */
-    suspend fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : RpcResponse<String> {
+    suspend fun ethSubscribe(type: SubscriptionTypes, filter: Filter = Filter()) : String {
         when (type) {
             SubscriptionTypes.newHeads -> rpc.send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name)))
             SubscriptionTypes.logs -> rpc.send(RpcRequest(EthMethods.eth_subscribe, listOf(type.name, filter)))
         }
         @Suppress("UNCHECKED_CAST")
-        return responses.first() as RpcResponse<String>
+        return responses.first().result()
     }
 
     /**
      * Unsubscribes from a subscription.
      * @param subscriptionId id of subscription to unsubscribe from
      * @return true if successful, false otherwise
-     * @throws Exception if failure
+     * @throws RpcException if failure
      */
-    suspend fun ethUnsubscribe(subscriptionId: String) : RpcResponse<Boolean> {
+    suspend fun ethUnsubscribe(subscriptionId: String) : Boolean {
         rpc.send(RpcRequest(EthMethods.eth_unsubscribe, listOf(subscriptionId)))
         @Suppress("UNCHECKED_CAST")
-        return responses.first() as RpcResponse<Boolean>
-    }
-
-    private inline fun <reified T> deserialize(response: Response): RpcResponse<T> {
-        val json = response.body!!.string()
-        return deserialize(json)
-    }
-
-    private inline fun <reified T> deserialize(json: String): RpcResponse<T> {
-        de.gematik.kether.eth.logger.debug (json.replace("\\s".toRegex(), ""))
-        return Json.decodeFromString(json)
+        return responses.first().result()
     }
 
 }

@@ -7,13 +7,13 @@ import de.gematik.kether.rpc.types.RpcResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import mu.KotlinLogging
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -38,10 +38,10 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
 
     protected val okClient by lazy { OkHttpClient() }
 
-    private val _notifications = MutableSharedFlow<RpcNotification<*>>()
+    private val _notifications = MutableSharedFlow<RpcNotification>()
     internal val notifications = _notifications.asSharedFlow()
 
-    private val _responses = MutableSharedFlow<RpcResponse<*>>()
+    private val _responses = MutableSharedFlow<RpcResponse>()
     internal val responses = _responses.asSharedFlow()
 
     private lateinit var ws: WebSocket
@@ -56,10 +56,10 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
                         runBlocking {
                             launch(Dispatchers.IO) {
                                 logger.debug("ws->:${text.replace("\\s".toRegex(), "")}")
-                                val message = deserialize(text)
+                                val message = deserializeMessage(text)
                                 when (message) {
-                                    is RpcResponse<*> -> _responses.emit(message)
-                                    is RpcNotification<*> -> _notifications.emit(message)
+                                    is RpcResponse -> _responses.emit(message)
+                                    is RpcNotification -> _notifications.emit(message)
                                 }
                             }
                         }
@@ -75,13 +75,15 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
         }
     }
 
-    fun call(request: RpcRequest): Response {
+    fun call(request: RpcRequest): RpcResponse {
         request.id = id++
         val jsonString = json.encodeToString(request)
         val body = jsonString.toRequestBody("application/json; charset=utf-8".toMediaType())
         val req = Request.Builder().url(url).post(body).build()
         logger.debug("$req\n$jsonString")
-        return okClient.newCall(req).execute()
+        val json = okClient.newCall(req).execute().body!!.string()
+        logger.debug(json.replace("\\s".toRegex(), ""))
+        return Json.decodeFromString(json)
     }
 
     fun send(request: RpcRequest) {
@@ -91,16 +93,14 @@ class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://
         ws.send(json)
     }
 
-    private fun deserialize(jsonString: String): Any {
+    private fun deserializeMessage(jsonString: String): Any {
         return runCatching {
-            when {
-                jsonString.contains("number") -> json.decodeFromString<RpcNotification<Head>>(jsonString)
-                jsonString.contains("logIndex") -> json.decodeFromString<RpcNotification<Log>>(jsonString)
-                else -> json.decodeFromString<RpcResponse<AnyResult>>(jsonString)
-            }
-
+                if(Json.parseToJsonElement(jsonString).jsonObject.containsKey("id")){
+                    json.decodeFromString<RpcResponse>(jsonString)
+                }else{
+                    json.decodeFromString<RpcNotification>(jsonString)
+                }
         }.onFailure { logger.debug(it.message) }.getOrThrow()
     }
-
 
 }

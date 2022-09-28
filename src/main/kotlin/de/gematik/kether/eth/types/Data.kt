@@ -35,7 +35,7 @@ open class Data {
     override operator fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (!(other is Data)) return false
-        return other.toByteArray().equals(value)
+        return other.toByteArray().contentEquals(value)
     }
 
     override fun hashCode(): Int {

@@ -21,4 +21,4 @@ data class Log(
     val address: Address? = null,
     val data: Data? = null,
     val topics: List<Data32>? = null
-)
+) : EthEvent

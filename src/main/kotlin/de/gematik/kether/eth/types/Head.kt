@@ -34,4 +34,4 @@ data class Head  constructor(
     val transactionsRoot: Data32? = null,
     val uncles: List<Data>? = null,
     val transactions: List<Data>? = null
-)
+) : EthEvent

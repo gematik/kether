@@ -29,24 +29,13 @@ class EthPubSubTests {
 
         @BeforeClass
         @JvmStatic
-        fun helloWorldDeploy() {
-            runBlocking {
+        fun prepare() {
                 ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
-                val greet = "Hello World"
-                val receipt = HelloWorld.deploy(ethereum1, account2Address, greet)
-                val helloWorldAddress = receipt.contractAddress!!
-                assert(receipt.isSuccess)
-                helloWorld = HelloWorld(
-                    ethereum1,
-                    Transaction(to = helloWorldAddress, from = account2Address)
-                )
-            }
         }
 
         @AfterClass
         @JvmStatic
-        fun cancelGldToken() {
-            helloWorld.cancel()
+        fun cleanUp() {
             ethereum1.close()
         }
     }
@@ -54,10 +43,10 @@ class EthPubSubTests {
     @Test
     fun ethSubscribeNewHeads() {
         runBlocking {
-            val subscription = ethereum1.ethSubscribe(SubscriptionTypes.newHeads).result!!
-            val newHead = ethereum1.notifications.first { it.params.subscription == subscription }.params.result as Head
+            val subscription = ethereum1.ethSubscribe(SubscriptionTypes.newHeads)
+            val newHead = ethereum1.notifications.first { it.params.subscription == subscription }.result<Head>()
             assert(newHead.number?.toInt() != null)
-            val isSuccess = ethereum1.ethUnsubscribe(subscription).result!!
+            val isSuccess = ethereum1.ethUnsubscribe(subscription)
             assert(isSuccess)
         }
     }
@@ -66,18 +55,21 @@ class EthPubSubTests {
     fun ethSubscribeLogs() {
         runBlocking {
             val newGreeting = "Greetings at ${Date()}"
+            val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
+            val helloWorldAddress = receipt.contractAddress!!
+            assert(receipt.isSuccess)
+            helloWorld = HelloWorld(
+                ethereum1,
+                Transaction(to = helloWorldAddress, from = account2Address)
+            )
 
             launch {
-                ethereum1.ethSubscribe(SubscriptionTypes.logs)
-                ethereum1.notifications.collect {
-                    if (it.params.result is Log) {
-                        val log = it.params.result as Log
-                        assert(log.topics?.get(0)?.toByteArray()?.contentEquals(HelloWorld.eventModified.toByteArray()) == true)
-                        assert(log.topics?.get(2)?.toByteArray()?.contentEquals(newGreeting.toTopic().toByteArray()) == true)
-                        cancel()
-                        helloWorld.cancel()
-                    }
-                }
+                val subscription = ethereum1.ethSubscribe(SubscriptionTypes.logs)
+                val log = ethereum1.notifications.first { it.params.subscription == subscription }.result<Log>()
+                assert(log.topics?.get(0)?.toByteArray()?.contentEquals(HelloWorld.eventModified.toByteArray()) == true)
+                assert(log.topics?.get(2)?.toByteArray()?.contentEquals(newGreeting.toTopic().toByteArray()) == true)
+                cancel()
+                helloWorld.cancel()
             }
 
             //firing log

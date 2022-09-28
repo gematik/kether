@@ -3,11 +3,9 @@ package de.gematik.kether.contracts
 import de.gematik.kether.eth.*
 import de.gematik.kether.eth.types.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.jsonObject
 import java.math.BigInteger
 
 /**
@@ -29,14 +27,12 @@ abstract class Contract(
 
     init {
         scope.launch {
-            eth.notifications.collect {
-                if (it.params.result is Log) {
-                    val log = it.params.result
-                    if (log.address?.toByteArray().contentEquals(baseTransaction.to?.toByteArray())) {
-                        listOfEventDecoders.forEach {
-                            it(log)?.let {
-                                _events.emit(it)
-                            }
+            eth.notifications.filter { it.params.result.jsonObject.containsKey("logIndex") }.collect {
+                val log = it.result<Log>()
+                if (log.address?.toByteArray().contentEquals(baseTransaction.to?.toByteArray())) {
+                    listOfEventDecoders.forEach {
+                        it(log)?.let {
+                            _events.emit(it)
                         }
                     }
                 }
@@ -53,17 +49,17 @@ abstract class Contract(
                     gasPrice = Quantity(BigInteger.ZERO),
                     data = params
                 )
-                val estimatedGas = eth.ethEstimateGas(transaction).result
+                val estimatedGas = eth.ethEstimateGas(transaction)
                 eth.ethSendTransaction(
                     transaction.copy(
                         gas = estimatedGas
                     )
-                ).result?.let {
-                    val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result!!
+                ).let {
+                    val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
                     eth.notifications.first { it.params.subscription == subscription }
                     eth.ethUnsubscribe(subscription)
-                    eth.ethGetTransactionReceipt(it).result ?: throw Exception("no result")
-                } ?: throw Exception("no transaction hash")
+                    eth.ethGetTransactionReceipt(it)
+                }
             }
         }
 
@@ -86,7 +82,7 @@ abstract class Contract(
                 data = params
             ),
             Quantity(Tag.latest)
-        ).result ?: throw Exception("no result")
+        )
     }
 
     suspend fun transact(params: Data): TransactionReceipt {
@@ -96,23 +92,21 @@ abstract class Contract(
             )
             eth.ethSendTransaction(
                 transaction.copy(
-                    gas = eth.ethEstimateGas(transaction).result
+                    gas = eth.ethEstimateGas(transaction)
                 )
             ).let {
-                it.result ?: throw Exception(it.error?.message ?: "undefined error")
-                val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads).result
-                    ?: throw Exception("subscription id missing")
+                val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
                 eth.notifications.first { it.params.subscription == subscription }
                 eth.ethUnsubscribe(subscription)
-                val receipt = it.result?.let {
+                val receipt = it.let {
                     eth.ethGetTransactionReceipt(it)
-                }?.result
-                receipt ?: throw Exception(it.error?.message ?: "undefined error")
+                }
+                receipt
             }
         }
     }
 
-    suspend fun subscribe(eventSelector: Data32): String? {
+    suspend fun subscribe(eventSelector: Data32): String {
         return eth.ethSubscribe(
             SubscriptionTypes.logs,
             Filter(
@@ -121,11 +115,11 @@ abstract class Contract(
                 address = baseTransaction.to,
                 topics = arrayOf(eventSelector)
             )
-        ).result
+        )
     }
 
-    suspend fun unsubscribe(subscriptionId: String) : Boolean {
-        return eth.ethUnsubscribe(subscriptionId).result?:false
+    suspend fun unsubscribe(subscriptionId: String): Boolean {
+        return eth.ethUnsubscribe(subscriptionId)
     }
 
 }
