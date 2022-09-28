@@ -49,4 +49,19 @@ class RpcSerializerTests {
         )
     }
 
+    @Test
+    fun deserializeRpcResponseNullResult() {
+        val string = """{
+            "jsonrpc" : "2.0",
+            "id" : 0,
+            "result" : "0x"
+        }"""
+        val deSerialized = Json.decodeFromString<RpcResponse>(string)
+        val test = RpcResponse(0, JsonPrimitive("0x"))
+        assert(deSerialized.id == test.id &&
+                deSerialized.jsonrpc == test.jsonrpc &&
+                deSerialized.result == test.result
+        )
+    }
+
 }

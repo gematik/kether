@@ -1,6 +1,7 @@
 package de.gematik.kether.contracts
 
 import de.gematik.kether.abi.*
+import de.gematik.kether.abi.types.AbiUint256
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.extensions.toRLP
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,6 +21,19 @@ class ContractCommonTest {
         val decoder = DataDecoder(function)
         assert(
             decoder.next<Data4>().toByteArray().contentEquals(selector))
+    }
+
+    @Test
+    fun decodingError() {
+        var message: String? = null
+        val data = Data20("0x00")
+        runCatching {
+            DataDecoder(data).next<AbiUint256>()
+            DataDecoder(data).next<AbiUint256>()
+        }.onFailure {
+            message = it.message
+        }
+        assert(message=="data decoding error: remaining data too short (pos: 0, limit: 20, type: Quantity")
     }
 
     @Test

@@ -1,9 +1,6 @@
 package de.gematik.kether.eth
 
-import de.gematik.kether.eth.types.Address
-import de.gematik.kether.eth.types.Quantity
-import de.gematik.kether.eth.types.Tag
-import de.gematik.kether.eth.types.TransactionReceipt
+import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.types.RpcResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -33,6 +30,33 @@ class EthSerializerTests {
         val deSerialized = Json.decodeFromString<Quantity>(string)
         assert(
             deSerialized == Quantity("331e7".toBigInteger(16))
+        )
+    }
+
+    @Test
+    fun deserializeDataEmpty() {
+        val string = """"0x""""
+        val deSerialized = Json.decodeFromString<Data>(string)
+        assert(
+            deSerialized == Data("0x")
+        )
+    }
+
+    @Test
+    fun deserializeDataHex() {
+        val string = """"0x1122""""
+        val deSerialized = Json.decodeFromString<Data>(string)
+        assert(
+            deSerialized == Data("0x1122")
+        )
+    }
+
+    @Test
+    fun deserializeData4() {
+        val string = """"0x00112233""""
+        val deSerialized = Json.decodeFromString<Data>(string)
+        assert(
+            deSerialized == Data4("0x112233")
         )
     }
 
