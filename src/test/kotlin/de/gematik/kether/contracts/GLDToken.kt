@@ -66,19 +66,13 @@ eventSelector=log.topics!!.get(0),from = log.topics!!.get(1),to = log.topics!!.g
 }
 override val listOfEventDecoders: List<(Log) -> Event?> = listOf(EventApproval::decoder,EventTransfer::decoder)
 // functions
-data class ResultsAllowance(
-val value: AbiUint256
-)
-fun allowance(owner: AbiAddress,spender: AbiAddress): ResultsAllowance {
+fun allowance(owner: AbiAddress,spender: AbiAddress): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionAllowance))
 .encode(owner)
 .encode(spender).build()
 val decoder = DataDecoder(call(params))
-return ResultsAllowance(
-decoder
-.next())
-}
+return decoder.next()}
 suspend fun approve(spender: AbiAddress,amount: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionApprove))
@@ -86,29 +80,17 @@ val params = DataEncoder()
 .encode(amount).build()
 return transact(params)
 }
-data class ResultsBalanceOf(
-val value: AbiUint256
-)
-fun balanceOf(account: AbiAddress): ResultsBalanceOf {
+fun balanceOf(account: AbiAddress): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionBalanceOf))
 .encode(account).build()
 val decoder = DataDecoder(call(params))
-return ResultsBalanceOf(
-decoder
-.next())
-}
-data class ResultsDecimals(
-val value: AbiUint8
-)
-fun decimals(): ResultsDecimals {
+return decoder.next()}
+fun decimals(): AbiUint8 {
 val params = DataEncoder()
 .encode(Data4(functionDecimals)).build()
 val decoder = DataDecoder(call(params))
-return ResultsDecimals(
-decoder
-.next())
-}
+return decoder.next()}
 suspend fun decreaseAllowance(spender: AbiAddress,subtractedValue: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionDecreaseAllowance))
@@ -123,39 +105,21 @@ val params = DataEncoder()
 .encode(addedValue).build()
 return transact(params)
 }
-data class ResultsName(
-val value: AbiString
-)
-fun name(): ResultsName {
+fun name(): AbiString {
 val params = DataEncoder()
 .encode(Data4(functionName)).build()
 val decoder = DataDecoder(call(params))
-return ResultsName(
-decoder
-.next())
-}
-data class ResultsSymbol(
-val value: AbiString
-)
-fun symbol(): ResultsSymbol {
+return decoder.next()}
+fun symbol(): AbiString {
 val params = DataEncoder()
 .encode(Data4(functionSymbol)).build()
 val decoder = DataDecoder(call(params))
-return ResultsSymbol(
-decoder
-.next())
-}
-data class ResultsTotalSupply(
-val value: AbiUint256
-)
-fun totalSupply(): ResultsTotalSupply {
+return decoder.next()}
+fun totalSupply(): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionTotalSupply)).build()
 val decoder = DataDecoder(call(params))
-return ResultsTotalSupply(
-decoder
-.next())
-}
+return decoder.next()}
 suspend fun transfer(to: AbiAddress,amount: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionTransfer))

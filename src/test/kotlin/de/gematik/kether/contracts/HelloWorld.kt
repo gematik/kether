@@ -46,17 +46,11 @@ eventSelector=log.topics!!.get(0),oldGreetingIdx = log.topics!!.get(1),newGreeti
 }
 override val listOfEventDecoders: List<(Log) -> Event?> = listOf(EventModified::decoder)
 // functions
-data class ResultsGreeting(
-val value: AbiString
-)
-fun greeting(): ResultsGreeting {
+fun greeting(): AbiString {
 val params = DataEncoder()
 .encode(Data4(functionGreeting)).build()
 val decoder = DataDecoder(call(params))
-return ResultsGreeting(
-decoder
-.next())
-}
+return decoder.next()}
 suspend fun kill(): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionKill)).build()

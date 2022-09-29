@@ -1,5 +1,6 @@
 package de.gematik.kether.rpc.types
 
+import de.gematik.kether.eth.types.Data
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -27,6 +28,7 @@ class RpcResponse {
     data class Error(
         val code: Int,
         val message: String,
+        val data: Data? = null
     )
 
     constructor(id: Int, result: JsonElement) {

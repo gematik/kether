@@ -65,7 +65,7 @@ class ContractHelloWorldTests {
             launch {
                 helloWorld.eth.ethSubscribe(SubscriptionTypes.logs)
                 helloWorld.eth.notifications.collect {
-                    val result = helloWorld.greeting().value
+                    val result = helloWorld.greeting()
                     assert(greeting == result)
                     helloWorld.cancel()
                     cancel()

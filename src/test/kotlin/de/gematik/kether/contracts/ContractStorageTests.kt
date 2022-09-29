@@ -53,10 +53,10 @@ class ContractStorageTests {
     @Test
     fun storageIncAndRetrieve() {
         runBlocking {
-            val start = storage.retrieve().value
+            val start = storage.retrieve()
             val receipt = storage.inc()
             assert(receipt.isSuccess)
-            val end = storage.retrieve().value
+            val end = storage.retrieve()
             assert(end == start.inc())
         }
     }
@@ -67,7 +67,7 @@ class ContractStorageTests {
             val random = Quantity(Random.Default.nextLong())
             val receipt = storage.store(num = random)
             assert(receipt.isSuccess)
-            val result = storage.retrieve().value
+            val result = storage.retrieve()
             assert(random == result)
         }
     }

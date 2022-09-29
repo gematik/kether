@@ -49,19 +49,19 @@ class ContractGLDTokenTests {
 
     @Test
     fun gldTokenBalanceOf() {
-        val balance = gldToken.balanceOf(account2Address).value
+        val balance = gldToken.balanceOf(account2Address)
         assert(balance == Quantity(1E18.toLong()))
     }
 
     @Test
     fun gldTokenName() {
-        val name = gldToken.name().value
+        val name = gldToken.name()
         assert(name == "Gold")
     }
 
     @Test
     fun gldTokenSymbol() {
-        val symbol = gldToken.symbol().value
+        val symbol = gldToken.symbol()
         assert(symbol == "GLD")
     }
 
@@ -72,14 +72,14 @@ class ContractGLDTokenTests {
                 val subscriptionId = gldToken.subscribe(GLDToken.eventTransfer)
                 gldToken.events.collect{
                     if(it is GLDToken.EventTransfer){
-                        gldToken.unsubscribe(subscriptionId!!)
+                        gldToken.unsubscribe(subscriptionId)
                         cancel()
                     }
                 }
             }
             val receipt = gldToken.transfer(account1Address, Quantity(1E16.toLong()))
             assert(receipt.isSuccess)
-            val balance = gldToken.balanceOf(account1Address).value
+            val balance = gldToken.balanceOf(account1Address)
             assert(balance == Quantity(1E16.toLong()))
         }
     }
