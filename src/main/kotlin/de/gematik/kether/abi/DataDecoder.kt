@@ -19,11 +19,11 @@ class DataDecoder(val data: Data) {
                 pos+=4
                 AbiSelector(bytes) as T
             }
-            AbiUint256::class -> {
+            AbiUint::class -> {
                 check(data.toByteArray().size - pos >= 32) {"data decoding error: remaining data too short (pos: $pos, limit: ${data.toByteArray().size}, type: ${T::class.simpleName})"}
                 val bytes = data.toByteArray().copyOfRange(pos, pos + 32)
                 pos += 32
-                AbiUint256(bytes) as T
+                AbiUint(bytes) as T
             }
             AbiString::class -> {
                 check(data.toByteArray().size - pos >= 32) {"data decoding error: remaining data too short (pos: $pos, limit: ${data.toByteArray().size}, type: ${T::class.simpleName})"}

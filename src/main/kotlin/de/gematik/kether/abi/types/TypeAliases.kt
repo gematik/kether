@@ -11,7 +11,9 @@ import java.math.BigInteger
  * gematik.de
  */
 
-typealias AbiUint256 = Quantity
+typealias AbiUint = Quantity
+typealias AbiUint256 = AbiUint
+typealias AbiUint32 = AbiUint
 typealias AbiString = String
 typealias AbiSelector = Data4
 typealias AbiBytes32 = Data32
