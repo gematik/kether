@@ -1,5 +1,6 @@
 package de.gematik.kether
 
+import de.gematik.kether.abi.AbiDecodingTests
 import de.gematik.kether.abi.AbiEncodingTests
 import de.gematik.kether.contracts.ContractHelloWorldTests
 import de.gematik.kether.contracts.ContractStorageTests
@@ -28,6 +29,7 @@ import org.junit.runners.Suite
     EthTestsAssumingContract::class,
     EthPubSubTests::class,
     AbiEncodingTests::class,
+    AbiDecodingTests::class,
     ContractStorageTests::class,
     ContractHelloWorldTests::class,
     ContractGLDTokenTests::class

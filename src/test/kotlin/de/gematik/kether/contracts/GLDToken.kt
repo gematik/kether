@@ -9,6 +9,8 @@ import de.gematik.kether.eth.types.*
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.keccak
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.reflect.KClass
+
 @OptIn(ExperimentalSerializationApi::class)
 class GLDToken(
 eth: Eth,
@@ -45,7 +47,7 @@ companion object {
 fun decoder(log: Log): Event? {
 return checkEvent(log, eventApproval)?.let {
 val decoder = DataDecoder(log.data!!)
-val value = decoder.next<AbiUint256>()
+val value = decoder.next(AbiUint256::class)
 EventApproval(
 eventSelector=log.topics!!.get(0),owner = log.topics!!.get(1),spender = log.topics!!.get(2),value = value)
 }
@@ -57,7 +59,7 @@ companion object {
 fun decoder(log: Log): Event? {
 return checkEvent(log, eventTransfer)?.let {
 val decoder = DataDecoder(log.data!!)
-val value = decoder.next<AbiUint256>()
+val value = decoder.next(AbiUint256::class)
 EventTransfer(
 eventSelector=log.topics!!.get(0),from = log.topics!!.get(1),to = log.topics!!.get(2),value = value)
 }
@@ -72,7 +74,7 @@ val params = DataEncoder()
 .encode(owner)
 .encode(spender).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiUint256::class)}
 suspend fun approve(spender: AbiAddress,amount: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionApprove))
@@ -85,12 +87,12 @@ val params = DataEncoder()
 .encode(Data4(functionBalanceOf))
 .encode(account).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiUint256::class)}
 fun decimals(): AbiUint8 {
 val params = DataEncoder()
 .encode(Data4(functionDecimals)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiUint8::class)}
 suspend fun decreaseAllowance(spender: AbiAddress,subtractedValue: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionDecreaseAllowance))
@@ -109,17 +111,17 @@ fun name(): AbiString {
 val params = DataEncoder()
 .encode(Data4(functionName)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiString::class)}
 fun symbol(): AbiString {
 val params = DataEncoder()
 .encode(Data4(functionSymbol)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiString::class)}
 fun totalSupply(): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionTotalSupply)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiUint256::class)}
 suspend fun transfer(to: AbiAddress,amount: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionTransfer))

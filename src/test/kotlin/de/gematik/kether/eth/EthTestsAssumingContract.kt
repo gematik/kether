@@ -43,7 +43,7 @@ class EthTestsAssumingContract {
             ),
             Quantity(Tag.latest)
         )
-        assert(DataDecoder(rpcResponse).next<Quantity>() == Quantity(0))
+        assert(DataDecoder(rpcResponse).next(Quantity::class) == Quantity(0))
     }
 
     @Test

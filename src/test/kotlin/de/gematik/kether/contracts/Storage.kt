@@ -35,7 +35,7 @@ fun retrieve(): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionRetrieve)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next()}
+return decoder.next(AbiUint256::class)}
 suspend fun store(num: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionStore))

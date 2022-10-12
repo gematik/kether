@@ -44,19 +44,19 @@ class AbiEncodingTests {
     }
 
     @Test
-    fun encodingArray() {
+    fun encodingFixedArray() {
         val array = arrayOf(AbiUint256(8), AbiUint256(9))
-        val result = DataEncoder().encode(array).build()
+        val result = DataEncoder().encode(array, 2).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
         assertByteArray(result.toByteArray(), r.hexToByteArray())
     }
 
     @Test
-    fun encodingList() {
-        val list = listOf(AbiUint256(8), AbiUint256(9))
-        val result = DataEncoder().encode(list).build()
-        val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + //offset 1. dynamic parameter
+    fun encodingDynamicArray() {
+        val array = arrayOf(AbiUint256(8), AbiUint256(9))
+        val result = DataEncoder().encode(array).build()
+        val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + //offset dynamic parameter
                 "0000000000000000000000000000000000000000000000000000000000000002" + //length
                 "0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
@@ -103,15 +103,15 @@ class AbiEncodingTests {
         assertByteArray(result.toByteArray(), r.hexToByteArray())
     }
 
+    data class Tuple(var a: AbiUint32, var b: AbiUint8) : AbiTuple {
+        override fun encode() : DataEncoder {
+            return DataEncoder()
+                .encode(a)
+                .encode(b)
+        }
+    }
     @Test
     fun encodingTuple() {
-        data class Tuple(var a: AbiUint32, var b: AbiUint8) : AbiTuple {
-            override fun encode() : DataEncoder {
-                return DataEncoder()
-                    .encode(a)
-                    .encode(b)
-            }
-        }
         val tuple = Tuple(a= AbiUint32(1L), AbiUint8(2L))
         val result = DataEncoder().encode(tuple).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000001" + // value component a
@@ -119,16 +119,16 @@ class AbiEncodingTests {
         assertByteArray(result.toByteArray(), r.hexToByteArray())
     }
 
+    data class DynamicTuple(var a: AbiString, var b: AbiString) : AbiTuple {
+        override fun encode() : DataEncoder {
+            return DataEncoder()
+                .encode(a)
+                .encode(b)
+        }
+    }
     @Test
     fun encodingDynamicTuple() {
-        data class Tuple(var a: AbiString, var b: AbiString) : AbiTuple {
-            override fun encode() : DataEncoder {
-                return DataEncoder()
-                    .encode(a)
-                    .encode(b)
-            }
-        }
-        val tuple = Tuple( "A", "B")
+        val tuple = DynamicTuple( "A", "B")
         val result = DataEncoder().encode(tuple).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset tuple
                 "0000000000000000000000000000000000000000000000000000000000000040" + // offset component a
@@ -145,7 +145,7 @@ class AbiEncodingTests {
         data class Tuple(var a: Array<AbiUint256>, var b: AbiString) : AbiTuple {
             override fun encode() : DataEncoder {
                 return DataEncoder()
-                    .encode(a)
+                    .encode(a,2)
                     .encode(b)
             }
         }
@@ -158,20 +158,6 @@ class AbiEncodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length component b
                 "4200000000000000000000000000000000000000000000000000000000000000" // value component b
         assertByteArray(result.toByteArray(), r.hexToByteArray())
-    }
-
-
-    @Test
-    fun decodingError() {
-        var message: String? = null
-        val data = Data20("0x00")
-        runCatching {
-            DataDecoder(data).next<AbiUint256>()
-            DataDecoder(data).next<AbiUint256>()
-        }.onFailure {
-            message = it.message
-        }
-        assert(message == "data decoding error: remaining data too short (pos: 0, limit: 20, type: Quantity)")
     }
 
     @Test

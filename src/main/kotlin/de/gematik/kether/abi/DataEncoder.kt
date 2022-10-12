@@ -3,7 +3,6 @@ package de.gematik.kether.abi
 import de.gematik.kether.abi.types.*
 import de.gematik.kether.eth.types.Data
 import de.gematik.kether.eth.types.Quantity
-import java.math.BigInteger
 import java.nio.charset.Charset
 
 /**
@@ -52,37 +51,30 @@ class DataEncoder() {
         return this
     }
 
-    fun encode(any: Any): DataEncoder {
+    fun encode(any: Any, size: Int = -1): DataEncoder {
         return when(any){
             is String -> encode(any)
             is Quantity -> encode(any)
-            is Array<*> -> encodeArray(any as Array<Any>)
+            is Array<*> -> encodeArray(any as Array<Any>, size)
             else -> throw IllegalArgumentException("${any::class.simpleName} not yet implemented")
         }
     }
 
-    fun <T> encodeArray(array: Array<T>): DataEncoder where T : Any {
+    private fun <T> encodeArray(array: Array<T>,size: Int = -1): DataEncoder where T : Any {
+        if( size >= 0){
+            require(array.size == size)
+        }
         val dataEncoder = DataEncoder()
         array.forEach {
             dataEncoder.encode(it)
         }
-        val len = if(!dataEncoder.isPureStatic()){
-            val lenBytes = array.size.toBigInteger().toByteArray()
-            lenBytes.copyInto(ByteArray(32), 32 - lenBytes.size)
+        val isDynamic = !dataEncoder.isPureStatic() || size < 0
+        val length = if(isDynamic){
+            array.size.toBigInteger().toByteArray().let { it.copyInto(ByteArray(32), 32 - it.size)}
         }else{
             ByteArray(0)
         }
-        chunks.add(Chunk(!dataEncoder.isPureStatic(), len + dataEncoder.build().toByteArray()))
-        return this
-    }
-
-    fun <T> encode(list: List<T>): DataEncoder where T : Any {
-        val dataEncoder = DataEncoder()
-        dataEncoder.encode(Quantity(list.size.toLong()))
-        list.forEach {
-            dataEncoder.encode(it)
-        }
-        chunks.add(Chunk(true, dataEncoder.build().toByteArray()))
+        chunks.add(Chunk(isDynamic, length + dataEncoder.build().toByteArray()))
         return this
     }
 
