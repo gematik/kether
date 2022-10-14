@@ -119,6 +119,11 @@ class AbiDecodingTests {
     }
 
     data class DynamicTuple(var a: AbiString, var b: AbiString) : AbiTuple {
+        @Suppress("UNCHECKED_CAST")
+        constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiString::class), b=dataDecoder.next(AbiString::class))
+        companion object : Dynamic {
+            override fun isDynamic() = isTypeDynamic(AbiString::class) || isTypeDynamic(AbiString::class)
+        }
         override fun encode(): DataEncoder {
             error("not implemented")
         }

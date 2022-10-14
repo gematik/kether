@@ -22,6 +22,11 @@ class DataEncoder() {
         return this
     }
 
+    fun encode(bytes: ByteArray): DataEncoder {
+        chunks.add(Chunk(false, bytes))
+        return this
+    }
+
     fun encode(int: Quantity): DataEncoder {
         var b = int.toBigInteger().toByteArray()
         check(b.size <= 32)
