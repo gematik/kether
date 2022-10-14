@@ -10,7 +10,7 @@ interface AbiTuple {
     companion object : Dynamic {
         override fun isDynamic(): Boolean = true
     }
-    fun encode(): DataEncoder
+    fun encode(): DataEncoder = error("not implemented for output types")
 }
 
 interface Dynamic{
