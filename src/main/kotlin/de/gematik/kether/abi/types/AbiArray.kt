@@ -1,6 +1,6 @@
 package de.gematik.kether.abi.types
 
-import de.gematik.kether.abi.isDynamic
+import de.gematik.kether.abi.isTypeDynamic
 import kotlin.reflect.KClass
 
 /**
@@ -12,11 +12,12 @@ data class AbiArray<T : Any>(val type: KClass<T>? = null, val array: AbiArray<T>
         return size < 0 || elementsAreDynamic()
     }
 
+    private fun elementsAreDynamic() : Boolean{
+        return if(array!=null) array.isDynamic() else isTypeDynamic(type!!)
+    }
+
     fun arrayType() : KClass<T>{
         return if(type!=null) type else array!!.arrayType()
     }
 
-    private fun elementsAreDynamic() : Boolean{
-        return if(array!=null) array.isDynamic() else isDynamic(type!!)
-    }
 }

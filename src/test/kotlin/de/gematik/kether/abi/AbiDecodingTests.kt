@@ -6,7 +6,6 @@ import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.toHex
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.Test
-import java.util.Arrays
 
 /**
  * Created by rk on 02.08.2022.
@@ -103,7 +102,7 @@ class AbiDecodingTests {
     data class StaticTuple(var a: AbiUint32, var b: AbiUint8) : AbiTuple {
         constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiUint32::class), b=dataDecoder.next(AbiUint8::class))
         companion object : Dynamic {
-            override fun isDynamic() = isDynamic(AbiUint32::class) || isDynamic(AbiUint8::class)
+            override fun isDynamic() = isTypeDynamic(AbiUint32::class) || isTypeDynamic(AbiUint8::class)
         }
         override fun encode(): DataEncoder {
             error("not implemented")
@@ -120,10 +119,6 @@ class AbiDecodingTests {
     }
 
     data class DynamicTuple(var a: AbiString, var b: AbiString) : AbiTuple {
-        constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiString::class), b=dataDecoder.next(AbiString::class))
-        companion object : Dynamic {
-            override fun isDynamic() = isDynamic(AbiString::class) || isDynamic(AbiString::class)
-        }
         override fun encode(): DataEncoder {
             error("not implemented")
         }
@@ -147,7 +142,7 @@ class AbiDecodingTests {
         @Suppress("UNCHECKED_CAST")
         constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiArray(AbiUint256::class,size = 2)) as Array<AbiUint256>, b=dataDecoder.next(AbiString::class))
         companion object : Dynamic {
-            override fun isDynamic() = isDynamic(AbiUint256::class) || isDynamic(AbiString::class)
+            override fun isDynamic() = isTypeDynamic(AbiUint256::class) || isTypeDynamic(AbiString::class)
         }
         override fun encode(): DataEncoder {
             error("not implemented")

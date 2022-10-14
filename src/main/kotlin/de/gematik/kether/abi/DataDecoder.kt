@@ -49,7 +49,7 @@ class DataDecoder(data: Data) {
 
             type.isSubclassOf(AbiTuple::class) -> {
                 var dataDecoder = this
-                if (isDynamic(type)) {
+                if (isTypeDynamic(type)) {
                     checkSize<T>(type, 32)
                     val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
                     pos += 32
@@ -71,6 +71,7 @@ class DataDecoder(data: Data) {
         return nextArray(array)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun copyArray(array: Array<*>, type: KClass<*>): Array<*> {
         return if (array[0] is Array<*>) {
             if(type == String::class){
@@ -116,7 +117,7 @@ class DataDecoder(data: Data) {
     }
 }
 
-fun <T : Any> isDynamic(type: KClass<T>): Boolean {
+fun <T : Any> isTypeDynamic(type: KClass<T>): Boolean {
     return when {
         type == String::class -> true
         type.isSubclassOf(AbiTuple::class) == true -> (type.companionObject?.objectInstance as Dynamic).isDynamic()
