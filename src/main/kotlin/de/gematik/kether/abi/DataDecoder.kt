@@ -67,8 +67,25 @@ class DataDecoder(data: Data) {
         }
     }
 
-    fun <T : Any> next(array: AbiArray<T>): Array<*> {
-        return nextArray(array)
+    fun <T : Any> next(type: KClass<T>, vararg dimensions: Int): Array<*> {
+        var dataDecoder = this
+        var len = dimensions.last()
+        if (dimensions.last() < 0 || isTypeDynamic(type)) {
+            checkSize(type, 32)
+            val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
+            pos += 32
+            len = BigInteger(byteArray.copyOfRange(offset, offset + 32)).toInt()
+            dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset + 32, byteArray.size)))
+        }
+        return if (dimensions.size > 1) {
+            Array(len) { dataDecoder.next(type, *dimensions.copyOf(dimensions.size-1)) }
+        } else {
+            when {
+                type == AbiUint::class -> Array(len) { dataDecoder.next(AbiUint::class) }
+                type == AbiString::class -> Array(len) { dataDecoder.next(AbiString::class) }
+                else -> Array<Any>(len) { dataDecoder.next(type) }
+            }
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -84,33 +101,6 @@ class DataDecoder(data: Data) {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> nextArray(array: AbiArray<T>): Array<*> {
-        var dataDecoder = this
-        var len = array.size
-        if (len < 0 || array.isDynamic()) {
-            checkSize(array.type ?: Array::class, 32)
-            val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
-            pos += 32
-            len = BigInteger(byteArray.copyOfRange(offset, offset + 32)).toInt()
-            dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset + 32, byteArray.size)))
-        }
-        return if (array.array != null) {
-            when{
-                array.arrayType() == AbiUint::class -> Array(len) { dataDecoder.nextArray(array.array) as Array<AbiUint> }
-                array.arrayType() == AbiString::class -> Array(len) { dataDecoder.nextArray(array.array) as Array<AbiString> }
-                else -> Array(len) { dataDecoder.nextArray(array.array) }
-            }
-        } else if (array.type != null) {
-            when {
-                array.type == AbiUint::class -> Array(len) { dataDecoder.next(AbiUint::class) }
-                array.type == AbiString::class -> Array(len) { dataDecoder.next(AbiString::class) }
-                else -> Array<Any>(len) { dataDecoder.next(array.type) }
-            }
-        } else {
-            error("internal error: invalid AbiArray")
-        }
-    }
 
     fun <T : Any> checkSize(type: KClass<T>, length: Int) {
         check(byteArray.size - pos >= length) { "data decoding error: remaining data too short (pos: $pos, limit: ${byteArray.size}, type: ${type.simpleName})" }

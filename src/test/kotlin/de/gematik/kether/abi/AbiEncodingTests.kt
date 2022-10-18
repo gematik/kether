@@ -1,10 +1,7 @@
 package de.gematik.kether.abi
 
 import de.gematik.kether.abi.types.*
-import de.gematik.kether.eth.types.Address
-import de.gematik.kether.eth.types.Data20
-import de.gematik.kether.eth.types.Data4
-import de.gematik.kether.eth.types.Transaction
+import de.gematik.kether.eth.types.*
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.toHex
 import de.gematik.kether.extensions.toRLP
@@ -55,7 +52,7 @@ class AbiEncodingTests {
     @Test
     fun encodingDynamicArray() {
         val array = arrayOf(AbiUint256(8), AbiUint256(9))
-        val result = DataEncoder().encode(array).build()
+        val result = DataEncoder().encode(array, -1).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + //offset dynamic parameter
                 "0000000000000000000000000000000000000000000000000000000000000002" + //length
                 "0000000000000000000000000000000000000000000000000000000000000008" + // element 0
@@ -66,7 +63,7 @@ class AbiEncodingTests {
     @Test
     fun encodingArrayOfStrings() {
         val array = arrayOf("A", "B")
-        val result = DataEncoder().encode(array).build()
+        val result = DataEncoder().encode(array, -1).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset of array
                 "0000000000000000000000000000000000000000000000000000000000000002" + // length of array
                 "0000000000000000000000000000000000000000000000000000000000000040" + // offset element 0
@@ -81,7 +78,7 @@ class AbiEncodingTests {
     @Test
     fun encodingArrayOfArrayOfStrings() {
         val array = arrayOf(arrayOf("A", "B"), arrayOf("C", "D"))
-        val result = DataEncoder().encode(array).build()
+        val result = DataEncoder().encode(array, 2, 2).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset of outer array
                 "0000000000000000000000000000000000000000000000000000000000000002" + // length of outer array
                 "0000000000000000000000000000000000000000000000000000000000000040" + // offset of arrayOf("A","B")
@@ -101,6 +98,14 @@ class AbiEncodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length "D"
                 "4400000000000000000000000000000000000000000000000000000000000000"   // value "D"
         assertByteArray(result.toByteArray(), r.hexToByteArray())
+    }
+
+    @Test
+    fun encodingArrayOfArrayWrongDimension() {
+        kotlin.runCatching {
+            val array = arrayOf(arrayOf("A", "B"), arrayOf("C", "D"))
+            val result = DataEncoder().encode(array, 1, 2).build()
+        }.onFailure {assert(it.message == "wrong dimension: expected 1 is 2")}.onSuccess { assert(false) }
     }
 
     data class Tuple(var a: AbiUint32, var b: AbiUint8) : AbiTuple {
@@ -157,6 +162,32 @@ class AbiEncodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000060" + // offset commpoent b
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length component b
                 "4200000000000000000000000000000000000000000000000000000000000000" // value component b
+        assertByteArray(result.toByteArray(), r.hexToByteArray())
+    }
+
+    @Test
+    fun encodingArrayOfTuple() {
+        data class Tuple(var a: AbiUint256, var b: AbiString) : AbiTuple {
+            override fun encode() : DataEncoder {
+                return DataEncoder()
+                    .encode(a)
+                    .encode(b)
+            }
+        }
+        val array = arrayOf(Tuple(AbiUint256(1L), "A"), Tuple(AbiUint256(2), "B"))
+        val result = DataEncoder().encode(array,2).build()
+        val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset array
+                "0000000000000000000000000000000000000000000000000000000000000002" + // length of array
+                "0000000000000000000000000000000000000000000000000000000000000040" + // offset tuple1
+                "00000000000000000000000000000000000000000000000000000000000000c0" + // offset tuple2
+                "0000000000000000000000000000000000000000000000000000000000000001" + // value component 1 tuple 1
+                "0000000000000000000000000000000000000000000000000000000000000040" + // offset component 2 tuple 1
+                "0000000000000000000000000000000000000000000000000000000000000001" + // length component 2 tuple 1
+                "4100000000000000000000000000000000000000000000000000000000000000" + // value component 2 tupel 1
+                "0000000000000000000000000000000000000000000000000000000000000002" + // value component1 tuple 2
+                "0000000000000000000000000000000000000000000000000000000000000040" + // offset component2 tuple 2
+                "0000000000000000000000000000000000000000000000000000000000000001" + // length component 2 tuple 2
+                "4200000000000000000000000000000000000000000000000000000000000000" // value component 2 tuple 2
         assertByteArray(result.toByteArray(), r.hexToByteArray())
     }
 
