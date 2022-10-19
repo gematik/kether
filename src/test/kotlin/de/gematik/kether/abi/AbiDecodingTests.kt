@@ -26,7 +26,7 @@ class AbiDecodingTests {
         val d = "0x0000000000000000000000000000000000000000000000000000000000000001" // value (32 byte)
         val result = DataDecoder(Data(d.hexToByteArray())).next(AbiUint256::class)
         val r = AbiUint256(1)
-        assert(result.equals(r))
+        assert(result == r)
     }
 
     @Test
@@ -44,8 +44,8 @@ class AbiDecodingTests {
         val d = "0x0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
         val result = DataDecoder(Data(d.hexToByteArray())).next(AbiUint256::class,  2)
-        val r = arrayOf(AbiUint256(8), AbiUint256(9))
-        assert(result.contentEquals(r))
+        val r = listOf(AbiUint256(8), AbiUint256(9))
+        assert(result == r)
     }
 
     @Test
@@ -55,8 +55,8 @@ class AbiDecodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
         val result = DataDecoder(Data(d.hexToByteArray())).next(AbiUint256::class, -1)
-        val r = arrayOf(AbiUint256(8), AbiUint256(9))
-        assert(result.contentEquals(r))
+        val r = listOf(AbiUint256(8), AbiUint256(9))
+        assert(result == r)
     }
 
     @Test
@@ -70,8 +70,8 @@ class AbiDecodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length element 1
                 "4200000000000000000000000000000000000000000000000000000000000000" // value element 1
         val result = DataDecoder(Data(d.hexToByteArray())).next(AbiString::class, 2)
-        val r = arrayOf("A", "B")
-        assert(result.contentEquals(r))
+        val r = listOf("A", "B")
+        assert(result == r)
     }
 
     @Test
@@ -94,9 +94,9 @@ class AbiDecodingTests {
                 "4300000000000000000000000000000000000000000000000000000000000000" + // value "C"
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length "D"
                 "4400000000000000000000000000000000000000000000000000000000000000"   // value "D"
-        val r = arrayOf(arrayOf("A", "B"), arrayOf("C", "D"))
+        val r = listOf(listOf("A", "B"), listOf("C", "D"))
         val result = DataDecoder(Data(d.hexToByteArray())).next(AbiString::class, -1, -1)
-        assert(result.contentDeepEquals(r))
+        assert(result == r)
     }
 
     data class StaticTuple(var a: AbiUint32, var b: AbiUint8) : AbiTuple {
@@ -119,7 +119,6 @@ class AbiDecodingTests {
     }
 
     data class DynamicTuple(var a: AbiString, var b: AbiString) : AbiTuple {
-        @Suppress("UNCHECKED_CAST")
         constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiString::class), b=dataDecoder.next(AbiString::class))
         companion object : Dynamic {
             override fun isDynamic() = isTypeDynamic(AbiString::class) || isTypeDynamic(AbiString::class)
@@ -143,9 +142,9 @@ class AbiDecodingTests {
         assert(result.a == r.a && result.b == r.b)
     }
 
-    data class TupleWithArray(val a: Array<AbiUint256>, val b: AbiString) : AbiTuple {
+    data class TupleWithArray(val a: List<AbiUint256>, val b: AbiString) : AbiTuple {
         @Suppress("UNCHECKED_CAST")
-        constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiUint256::class, 2) as Array<AbiUint256>, b=dataDecoder.next(AbiString::class))
+        constructor(dataDecoder: DataDecoder) : this(a = dataDecoder.next(AbiUint256::class, 2) as List<AbiUint256>, b=dataDecoder.next(AbiString::class))
         companion object : Dynamic {
             override fun isDynamic() = isTypeDynamic(AbiUint256::class) || isTypeDynamic(AbiString::class)
         }
@@ -161,9 +160,9 @@ class AbiDecodingTests {
                 "0000000000000000000000000000000000000000000000000000000000000060" + // offset commpoent b
                 "0000000000000000000000000000000000000000000000000000000000000001" + // length component b
                 "4200000000000000000000000000000000000000000000000000000000000000" // value component b
-        val r = TupleWithArray(arrayOf(AbiUint256(8), AbiUint256(9)), "B")
+        val r = TupleWithArray(listOf(AbiUint256(8), AbiUint256(9)), "B")
         val result = DataDecoder(Data(d.hexToByteArray())).next(TupleWithArray::class)
-        assert(result.a.contentEquals(r.a) && result.b == r.b)
+        assert(result.a == r.a && result.b == r.b)
     }
 
 

@@ -67,7 +67,7 @@ class DataDecoder(data: Data) {
         }
     }
 
-    fun <T : Any> next(type: KClass<T>, vararg dimensions: Int): Array<*> {
+    fun <T : Any> next(type: KClass<T>, vararg dimensions: Int): List<*> {
         var dataDecoder = this
         var len = dimensions.last()
         if (dimensions.last() < 0 || isTypeDynamic(type)) {
@@ -78,12 +78,12 @@ class DataDecoder(data: Data) {
             dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset + 32, byteArray.size)))
         }
         return if (dimensions.size > 1) {
-            Array(len) { dataDecoder.next(type, *dimensions.copyOf(dimensions.size-1)) }
+            List(len) { dataDecoder.next(type, *dimensions.copyOf(dimensions.size-1)) }
         } else {
             when {
-                type == AbiUint::class -> Array(len) { dataDecoder.next(AbiUint::class) }
-                type == AbiString::class -> Array(len) { dataDecoder.next(AbiString::class) }
-                else -> Array<Any>(len) { dataDecoder.next(type) }
+//                type == AbiUint::class -> List(len) { dataDecoder.next(AbiUint::class) }
+//                type == AbiString::class -> List(len) { dataDecoder.next(AbiString::class) }
+                else -> List<Any>(len) { dataDecoder.next(type) }
             }
         }
     }

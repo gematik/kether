@@ -61,20 +61,36 @@ class DataEncoder() {
 
     fun encode(tuple: AbiTuple): DataEncoder {
         val dataEncoder = tuple.encode()
-        chunks.add(Chunk(
-            dataEncoder.chunks.filter { it.isDynamic }.isNotEmpty(),
-            dataEncoder.build().toByteArray())
+        chunks.add(
+            Chunk(
+                dataEncoder.chunks.filter { it.isDynamic }.isNotEmpty(),
+                dataEncoder.build().toByteArray()
+            )
         )
         return this
     }
 
-    fun <T> encode(array: Array<T>, vararg dimensions: Int): DataEncoder where T : Any {
+    @Suppress("UNCHECKED_CAST")
+    fun encode(array: List<Any>, vararg dimensions: Int): DataEncoder {
         require(dimensions.isNotEmpty())
         if (dimensions.last() > 0) {
-            require(array.size == dimensions.last(), {"wrong dimension: expected ${dimensions.last()} is ${array.size}"})
+            require(
+                array.size == dimensions.last(),
+                { "wrong dimension: expected ${dimensions.last()} is ${array.size}" })
         }
         val dataEncoder = DataEncoder()
-        array.forEach { dataEncoder.encodeElement(it, *dimensions.copyOf(dimensions.size - 1)) }
+        array.forEach {
+            if (dimensions.size > 1) {
+                dataEncoder.encode(it as List<Any>, *dimensions.copyOf(dimensions.size - 1))
+            } else
+                when (it) {
+                    is String -> dataEncoder.encode(it)
+                    is Quantity -> dataEncoder.encode(it)
+                    is AbiAddress -> dataEncoder.encode(it)
+                    is AbiTuple -> dataEncoder.encode(it)
+                    else -> throw IllegalArgumentException("${it::class.simpleName} not supported in arrays yet")
+                }
+        }
         val isDynamic = (dataEncoder.chunks.isNotEmpty() && dataEncoder.chunks[0].isDynamic) || dimensions.last() < 0
         val length = if (isDynamic) {
             array.size.toBigInteger().toByteArray().let { it.copyInto(ByteArray(32), 32 - it.size) }
@@ -83,19 +99,6 @@ class DataEncoder() {
         }
         chunks.add(Chunk(isDynamic, length + dataEncoder.build().toByteArray()))
         return this
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun encodeElement(any: Any, vararg dimensions: Int): DataEncoder {
-        return if (dimensions.isNotEmpty()) {
-            encode(any as Array<Any>, *dimensions)
-        } else when (any) {
-            is String -> encode(any)
-            is Quantity -> encode(any)
-            is AbiAddress -> encode(any)
-            is AbiTuple -> encode(any)
-            else -> throw IllegalArgumentException("${any::class.simpleName} not supported in arrays yet")
-        }
     }
 
     fun build(): Data {

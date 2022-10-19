@@ -42,7 +42,7 @@ class AbiEncodingTests {
 
     @Test
     fun encodingFixedArray() {
-        val array = arrayOf(AbiUint256(8), AbiUint256(9))
+        val array = listOf(AbiUint256(8), AbiUint256(9))
         val result = DataEncoder().encode(array, 2).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
@@ -51,7 +51,7 @@ class AbiEncodingTests {
 
     @Test
     fun encodingDynamicArray() {
-        val array = arrayOf(AbiUint256(8), AbiUint256(9))
+        val array = listOf(AbiUint256(8), AbiUint256(9))
         val result = DataEncoder().encode(array, -1).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + //offset dynamic parameter
                 "0000000000000000000000000000000000000000000000000000000000000002" + //length
@@ -62,7 +62,7 @@ class AbiEncodingTests {
 
     @Test
     fun encodingArrayOfStrings() {
-        val array = arrayOf("A", "B")
+        val array = listOf("A", "B")
         val result = DataEncoder().encode(array, -1).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset of array
                 "0000000000000000000000000000000000000000000000000000000000000002" + // length of array
@@ -77,7 +77,7 @@ class AbiEncodingTests {
 
     @Test
     fun encodingArrayOfArrayOfStrings() {
-        val array = arrayOf(arrayOf("A", "B"), arrayOf("C", "D"))
+        val array = listOf(listOf("A", "B"), listOf("C", "D"))
         val result = DataEncoder().encode(array, 2, 2).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset of outer array
                 "0000000000000000000000000000000000000000000000000000000000000002" + // length of outer array
@@ -103,8 +103,8 @@ class AbiEncodingTests {
     @Test
     fun encodingArrayOfArrayWrongDimension() {
         kotlin.runCatching {
-            val array = arrayOf(arrayOf("A", "B"), arrayOf("C", "D"))
-            val result = DataEncoder().encode(array, 1, 2).build()
+            val array = listOf(listOf("A", "B"), listOf("C", "D"))
+            DataEncoder().encode(array, 1, 2).build()
         }.onFailure {assert(it.message == "wrong dimension: expected 1 is 2")}.onSuccess { assert(false) }
     }
 
@@ -147,14 +147,14 @@ class AbiEncodingTests {
 
     @Test
     fun encodingTupleWithArray() {
-        data class Tuple(var a: Array<AbiUint256>, var b: AbiString) : AbiTuple {
+        data class Tuple(var a: List<AbiUint256>, var b: AbiString) : AbiTuple {
             override fun encode() : DataEncoder {
                 return DataEncoder()
                     .encode(a,2)
                     .encode(b)
             }
         }
-        val tuple = Tuple(arrayOf(AbiUint256(8), AbiUint256(9)), "B")
+        val tuple = Tuple(listOf(AbiUint256(8), AbiUint256(9)), "B")
         val result = DataEncoder().encode(tuple).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset tuple
                 "0000000000000000000000000000000000000000000000000000000000000008" + // component a: element 0
@@ -174,7 +174,7 @@ class AbiEncodingTests {
                     .encode(b)
             }
         }
-        val array = arrayOf(Tuple(AbiUint256(1L), "A"), Tuple(AbiUint256(2), "B"))
+        val array = listOf(Tuple(AbiUint256(1L), "A"), Tuple(AbiUint256(2), "B"))
         val result = DataEncoder().encode(array,2).build()
         val r = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset array
                 "0000000000000000000000000000000000000000000000000000000000000002" + // length of array
@@ -198,7 +198,7 @@ class AbiEncodingTests {
             data = DataEncoder().encode(Data4(byteArrayOf(1, 2, 3, 4))).build()
         )
         val byteArray = transaction.toRLP()
-        assert(byteArray.size > 0)
+        assert(byteArray.isNotEmpty())
     }
 
     private fun assertByteArray(result: ByteArray, expectedResult: ByteArray){
@@ -206,7 +206,7 @@ class AbiEncodingTests {
             val left = result.toHex().drop(2).chunked(64)
             val right = expectedResult.toHex().drop(2).chunked(64)
             val stringBuilder = StringBuilder("byteArray's do not match: \n")
-            for(i in 0 .. Math.min(left.size, right.size)-1){
+            for(i in 0 until Math.min(left.size, right.size)){
                 stringBuilder.append("${left[i]} - ${right[i]}")
                 stringBuilder.append(if(left[i] != right[i]) " !\n" else "\n")
             }
