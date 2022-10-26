@@ -21,7 +21,7 @@ fun ByteArray.toRLP(): ByteArray {
         else -> {
             val length = size.toBigInteger()
             val lengthOfLength = (length.bitLength() - 1) / 8 + 1
-            byteArrayOf((0xb7 + lengthOfLength).toByte()).plus(length.toByteArray()).plus(this)
+            byteArrayOf((0xb7 + lengthOfLength).toByte()).plus(length.toByteArray().dropWhile{it == 0.toByte()}.toByteArray()).plus(this)
         }
     }
 }
@@ -31,7 +31,7 @@ fun ByteArray.toRLP(): ByteArray {
  * @return RLP list coded byte array
  */
 
-private fun List<*>.toRLP(): ByteArray {
+fun List<*>.toRLP(): ByteArray {
     var payload = ByteArray(0)
     forEach {
         payload = payload.plus(
@@ -47,7 +47,7 @@ private fun List<*>.toRLP(): ByteArray {
         else -> {
             val length = payload.size.toBigInteger()
             val lengthOfLength = (length.bitLength() - 1) / 8 + 1
-            byteArrayOf((0xf7 + lengthOfLength).toByte()).plus(length.toByteArray()).plus(payload)
+            byteArrayOf((0xf7 + lengthOfLength).toByte()).plus(length.toByteArray().dropWhile{it == 0.toByte()}.toByteArray()).plus(payload)
         }
     }
 }
@@ -68,7 +68,7 @@ fun Int.toRLP(): ByteArray = toBigInteger().toByteArray().toRLP()
  * Converts [BigInteger] to RLP coded byte array.
  * @return RLP coded byte array
  */
-fun BigInteger.toRLP(): ByteArray = toByteArray().toRLP()
+fun BigInteger.toRLP(): ByteArray = toByteArray().dropWhile{it == 0.toByte()}.toByteArray().toRLP()
 
 val RlpEmpty = byteArrayOf(0x80.toByte())
 
@@ -82,28 +82,11 @@ fun Byte.toRLP(): ByteArray = byteArrayOf(this).toRLP()
  * Converts [Quantity] to RLP coded byte array.
  * @return RLP coded byte array
  */
-fun Quantity.toRLP(): ByteArray = toBigInteger().toByteArray().toRLP()
+fun Quantity.toRLP(): ByteArray = toBigInteger().toRLP()
 
 /**
  * Converts [Quantity] to RLP coded byte array.
  * @return RLP coded byte array
  */
 fun Data.toRLP(): ByteArray = toByteArray().toRLP()
-
-
-fun Transaction.toRLP(isEIP1559: Boolean = false): ByteArray {
-    val rlpList = if (isEIP1559) {
-        error("not implemented yet")
-    } else {
-        listOf(
-            nonce?.toRLP() ?: RlpEmpty,
-            gasPrice?.toRLP() ?: RlpEmpty,
-            gas?.toRLP() ?: RlpEmpty,
-            to?.toRLP() ?: RlpEmpty,
-            value?.toRLP() ?: RlpEmpty,
-            data?.toRLP() ?: RlpEmpty
-        )
-    }
-    return rlpList.toRLP()
-}
 

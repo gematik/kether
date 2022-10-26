@@ -21,6 +21,10 @@ private val logger = KotlinLogging.logger{}
 @ExperimentalSerializationApi
 class Eth(val rpc: Rpc) : Closeable {
 
+    val chainId : Quantity by lazy {
+        ethChainId()
+    }
+
     /**
      * Provides a flow of notifications. Use [ethSubscribe] to subscribe for notifications and then [kotlinx.coroutines.flow.collect] to receive and process notifications. Please note that the result of a request is not a notification.
      * ##example
@@ -101,6 +105,15 @@ class Eth(val rpc: Rpc) : Closeable {
     }
 
     /**
+     * Returns the number of transactions sent from an address.
+     * @return number of transactions sent from this address.
+     * @throws RpcException if failure
+     */
+    fun ethGetTransactionCount(account: Address, blockNumber: Quantity) : Quantity {
+        return rpc.call(RpcRequest(EthMethods.eth_getTransactionCount, listOf(account, blockNumber))).result()
+    }
+
+    /**
      * Executes a new message call immediately without creating a transaction on the block chain.
      * @param Transaction - where from field is optional and nonce field is ommited.
      * @param Quantity - (optional) Integer block number, or the string 'latest', 'earliest' or 'pending', see the default block parameter     * @return the return value of executed contract.
@@ -119,6 +132,17 @@ class Eth(val rpc: Rpc) : Closeable {
     fun ethSendTransaction(transaction: Transaction) : Data32 {
         return rpc.call(RpcRequest(EthMethods.eth_sendTransaction, listOf(transaction))).result()
     }
+
+    /**
+     * Creates new message call transaction or a contract creation for signed transactions.
+     * @param Data - the signed transaction.
+     * @return transaction hash, or the zero hash if the transaction is not yet available.
+     * @throws RpcException if failure
+     */
+    fun ethSendRawTransaction(transaction: Data) : Data32 {
+        return rpc.call(RpcRequest(EthMethods.eth_sendRawTransaction, listOf(transaction))).result()
+    }
+
 
     /**
      * Returns the receipt of a transaction by transaction hash. Note That the receipt is available even for pending transactions.

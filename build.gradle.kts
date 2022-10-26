@@ -10,6 +10,9 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://hyperledger.jfrog.io/artifactory/besu-maven/")
+    }
 }
 
 dependencies {
@@ -24,6 +27,7 @@ dependencies {
     implementation("junit:junit:4.13.1")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("org.hyperledger.besu.internal:crypto:22.7.0")
 }
 
 configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {

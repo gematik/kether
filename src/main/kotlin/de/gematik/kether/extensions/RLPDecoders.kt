@@ -11,32 +11,32 @@ import java.math.BigInteger
  * Converts RLP coded byte array to [ByteArray].
  * @return [ByteArray] payload of RLP coded element
  */
-fun ByteArray.toByteArrayFromRLP(): ByteArray? = when {
-    this[0] < 0x7f.toByte() -> { // byte
+fun ByteArray.toByteArrayFromRLP(): ByteArray? = when(this[0].toUByte().toInt()) {
+     in 0 .. 0x7f -> { // byte
         check(this.size == 1)
         this
     }
-    this[0] == 0x80.toByte() -> { // null
+    0x80 -> { // null
         check(this.size == 1)
         null
     }
-    this[0] <= 0xb7.toByte() -> { // byteArray with length less than 55 byte
+    in 0x81 ..0xb7 -> { // byteArray with length less than 55 byte
         val length = this[0].toInt() - 0x80
         check(size == 1 + length)
         copyOfRange(1, this.size)
     }
-    this[0] <= 0xbf.toByte() -> { // byteArray with length greater than 55 bytes
+    in 0xb8 .. 0xbf -> { // byteArray with length greater than 55 bytes
         val lengthOfLength = this[0].toInt()-0xb7
         val length = BigInteger(copyOfRange(1, lengthOfLength)).toInt()
         check(size == 1 + lengthOfLength + length)
         copyOfRange(1 + lengthOfLength, this.size)
     }
-    this[0] <= 0xf7.toByte() -> { // payload with length less than 55 byte
+    in 0xc0 ..0xf7 -> { // payload with length less than 55 byte
         val length = this[0].toInt() - 0xc0
         check(size == 1 + length)
         copyOfRange(1, this.size)
     }
-    this[0] <= 0xbf.toByte() -> { // payload with length greater than 55 bytes
+    in 0xf8 .. 0xff -> { // payload with length greater than 55 bytes
         val lengthOfLength = this[0].toInt()-0xf7
         val length = BigInteger(copyOfRange(1, lengthOfLength)).toInt()
         check(size == 1 + lengthOfLength + length)

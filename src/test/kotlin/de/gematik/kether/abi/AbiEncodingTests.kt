@@ -191,16 +191,6 @@ class AbiEncodingTests {
         assertByteArray(result.toByteArray(), r.hexToByteArray())
     }
 
-    @Test
-    fun encodeTransaction() {
-        val transaction = Transaction(
-            to = Address("0x1122334455667788990011223344556677889900"),
-            data = DataEncoder().encode(Data4(byteArrayOf(1, 2, 3, 4))).build()
-        )
-        val byteArray = transaction.toRLP()
-        assert(byteArray.isNotEmpty())
-    }
-
     private fun assertByteArray(result: ByteArray, expectedResult: ByteArray){
         assert(result.contentEquals(expectedResult)) {
             val left = result.toHex().drop(2).chunked(64)

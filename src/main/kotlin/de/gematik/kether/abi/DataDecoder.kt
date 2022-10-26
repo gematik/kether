@@ -12,8 +12,8 @@ import kotlin.reflect.full.isSubclassOf
  * gematik.de
  */
 class DataDecoder(data: Data) {
-    val byteArray = data.toByteArray()
-    var pos: Int = 0
+    private val byteArray = data.toByteArray()
+    private var pos: Int = 0
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> next(type: KClass<T>): T {
@@ -41,7 +41,7 @@ class DataDecoder(data: Data) {
             }
 
             type == AbiBytes32::class -> {
-                checkSize<T>(type, 32)
+                checkSize(type, 32)
                 val bytes = byteArray.copyOfRange(pos, pos + 32)
                 pos += 32
                 AbiBytes32(bytes) as T
@@ -50,7 +50,7 @@ class DataDecoder(data: Data) {
             type.isSubclassOf(AbiTuple::class) -> {
                 var dataDecoder = this
                 if (isTypeDynamic(type)) {
-                    checkSize<T>(type, 32)
+                    checkSize(type, 32)
                     val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
                     pos += 32
                     dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset, byteArray.size)))
@@ -67,7 +67,7 @@ class DataDecoder(data: Data) {
         }
     }
 
-    fun <T : Any> next(type: KClass<T>, vararg dimensions: Int): List<*> {
+    fun next(type: KClass<*>, vararg dimensions: Int): List<*> {
         var dataDecoder = this
         var len = dimensions.last()
         if (dimensions.last() < 0 || isTypeDynamic(type)) {
@@ -77,13 +77,11 @@ class DataDecoder(data: Data) {
             len = BigInteger(byteArray.copyOfRange(offset, offset + 32)).toInt()
             dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset + 32, byteArray.size)))
         }
-        return if (dimensions.size > 1) {
-            List(len) { dataDecoder.next(type, *dimensions.copyOf(dimensions.size-1)) }
-        } else {
-            when {
-//                type == AbiUint::class -> List(len) { dataDecoder.next(AbiUint::class) }
-//                type == AbiString::class -> List(len) { dataDecoder.next(AbiString::class) }
-                else -> List<Any>(len) { dataDecoder.next(type) }
+        return List(len) {
+            if (dimensions.size > 1) {
+                dataDecoder.next(type, *dimensions.copyOf(dimensions.size - 1))
+            } else {
+                dataDecoder.next(type)
             }
         }
     }
@@ -91,9 +89,9 @@ class DataDecoder(data: Data) {
     @Suppress("UNCHECKED_CAST")
     private fun copyArray(array: Array<*>, type: KClass<*>): Array<*> {
         return if (array[0] is Array<*>) {
-            if(type == String::class){
+            if (type == String::class) {
                 Array(array.size) { copyArray(array[it] as Array<*>, type) as Array<String> }
-            }else{
+            } else {
                 error("debug")
             }
         } else {
@@ -102,7 +100,7 @@ class DataDecoder(data: Data) {
     }
 
 
-    fun <T : Any> checkSize(type: KClass<T>, length: Int) {
+    private fun <T : Any> checkSize(type: KClass<T>, length: Int) {
         check(byteArray.size - pos >= length) { "data decoding error: remaining data too short (pos: $pos, limit: ${byteArray.size}, type: ${type.simpleName})" }
     }
 }
@@ -110,7 +108,7 @@ class DataDecoder(data: Data) {
 fun <T : Any> isTypeDynamic(type: KClass<T>): Boolean {
     return when {
         type == String::class -> true
-        type.isSubclassOf(AbiTuple::class) == true -> (type.companionObject?.objectInstance as Dynamic).isDynamic()
+        type.isSubclassOf(AbiTuple::class) -> (type.companionObject?.objectInstance as Dynamic).isDynamic()
         else -> false
     }
 }

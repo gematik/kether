@@ -1,9 +1,12 @@
 package de.gematik.kether.contracts
 
-import de.gematik.kether.eth.*
+import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.jsonObject
 import java.math.BigInteger
@@ -16,7 +19,8 @@ import java.math.BigInteger
 @OptIn(ExperimentalSerializationApi::class)
 abstract class Contract(
     val eth: Eth,
-    val baseTransaction: Transaction = Transaction()
+    val baseTransaction: Transaction = Transaction(),
+    val privateKey: BigInteger? = null
 ) {
     private val scope = CoroutineScope(CoroutineName(this.toString()))
 
@@ -41,24 +45,37 @@ abstract class Contract(
     }
 
     companion object {
-        fun deploy(eth: Eth, from: Address, params: Data): TransactionReceipt {
+        fun deploy(eth: Eth, from: Address, params: Data, privateKey: BigInteger? = null): TransactionReceipt {
             return runBlocking {
                 val transaction = Transaction(
                     from = from,
-                    value = Quantity(BigInteger.ZERO),
-                    gasPrice = Quantity(BigInteger.ZERO),
+                    value = Quantity(0),
+                    gasPrice = Quantity(0),
                     data = params
                 )
-                val estimatedGas = eth.ethEstimateGas(transaction)
-                eth.ethSendTransaction(
-                    transaction.copy(
-                        gas = estimatedGas
-                    )
-                ).let {
+                transact(eth, transaction, privateKey)
+            }
+        }
+
+        suspend fun transact(eth: Eth, transaction: Transaction, privateKey: BigInteger?): TransactionReceipt {
+            require(transaction.from!=null) {"sender address required to send transaction"}
+            return withTimeout(10000) {
+                val tx = transaction.copy(
+                    gas = eth.ethEstimateGas(transaction),
+                    nonce = eth.ethGetTransactionCount(transaction.from, Quantity(Tag.pending))
+                )
+                if (privateKey != null) {
+                    eth.ethSendRawTransaction(Data(tx.sign(chainId = eth.chainId, privateKey = privateKey)))
+                } else {
+                    eth.ethSendTransaction(tx)
+                }.let {
                     val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
                     eth.notifications.first { it.params.subscription == subscription }
                     eth.ethUnsubscribe(subscription)
-                    eth.ethGetTransactionReceipt(it)
+                    val receipt = it.let {
+                        eth.ethGetTransactionReceipt(it)
+                    }
+                    receipt
                 }
             }
         }
@@ -86,24 +103,10 @@ abstract class Contract(
     }
 
     suspend fun transact(params: Data): TransactionReceipt {
-        return withTimeout(10000) {
-            val transaction = baseTransaction.copy(
-                data = params
-            )
-            eth.ethSendTransaction(
-                transaction.copy(
-                    gas = eth.ethEstimateGas(transaction)
-                )
-            ).let {
-                val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
-                eth.notifications.first { it.params.subscription == subscription }
-                eth.ethUnsubscribe(subscription)
-                val receipt = it.let {
-                    eth.ethGetTransactionReceipt(it)
-                }
-                receipt
-            }
-        }
+        val transaction = baseTransaction.copy(
+            data = params
+        )
+        return Companion.transact(eth, transaction, privateKey)
     }
 
     suspend fun subscribe(eventSelector: Data32): String {

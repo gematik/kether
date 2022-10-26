@@ -13,7 +13,9 @@ enum class EthMethods {
     eth_estimateGas,
     eth_call,
     eth_sendTransaction,
+    eth_sendRawTransaction,
     eth_getTransactionReceipt,
+    eth_getTransactionCount,
     eth_subscribe,
     eth_unsubscribe
 }
