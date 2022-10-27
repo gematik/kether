@@ -7,21 +7,21 @@ import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 /**
  * Created by rk on 02.08.2022.
  * gematik.de
  */
 @ExperimentalSerializationApi
-class EthTestsAssumingContract {
+class EthAssumingContractTests {
     companion object {
         val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
         val ethereum1 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8547"))
         lateinit var storageAddress: Address
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {

@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.util.*
 
 /**
@@ -27,13 +27,13 @@ class EthPubSubTests {
         lateinit var helloWorld: HelloWorld
         lateinit var ethereum1: Eth
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun prepare() {
                 ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun cleanUp() {
             ethereum1.close()

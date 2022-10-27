@@ -5,7 +5,7 @@ import de.gematik.kether.contracts.Storage
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Created by rk on 02.08.2022.

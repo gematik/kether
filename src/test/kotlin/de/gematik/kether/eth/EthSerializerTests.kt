@@ -1,12 +1,12 @@
 package de.gematik.kether.eth
 
 import de.gematik.kether.eth.types.*
-import de.gematik.kether.rpc.types.RpcResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
-import org.junit.Test
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonPrimitive
+import org.junit.jupiter.api.Test
 import java.math.BigInteger
 
 /**

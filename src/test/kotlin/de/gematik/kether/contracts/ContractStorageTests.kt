@@ -7,9 +7,9 @@ import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
 /**
@@ -23,7 +23,7 @@ class ContractStorageTests {
         val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
         lateinit var storage: Storage
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
@@ -38,7 +38,7 @@ class ContractStorageTests {
             }
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun cancelStorage() {
             storage.cancel()

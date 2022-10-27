@@ -1,8 +1,6 @@
 package de.gematik.kether.extensions
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.Test
-import java.math.BigInteger
+import org.junit.jupiter.api.Test
 
 /**
  * Created by rk on 02.08.2022.

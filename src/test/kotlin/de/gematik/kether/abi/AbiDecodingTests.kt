@@ -5,7 +5,7 @@ import de.gematik.kether.eth.types.*
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.toHex
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Created by rk on 02.08.2022.

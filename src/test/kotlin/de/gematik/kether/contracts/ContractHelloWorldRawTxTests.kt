@@ -9,9 +9,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.util.*
 
@@ -28,7 +28,7 @@ class ContractHelloWorldRawTxTests {
 
         lateinit var helloWorld: HelloWorld
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun helloWorldDeploy() {
             runBlocking {
@@ -45,7 +45,7 @@ class ContractHelloWorldRawTxTests {
             }
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun cancelGldToken() {
             helloWorld.cancel()

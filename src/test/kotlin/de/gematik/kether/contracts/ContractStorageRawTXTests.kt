@@ -7,9 +7,9 @@ import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import kotlin.random.Random
 
@@ -25,7 +25,7 @@ class ContractStorageRawTXTests {
         val account2PrivateKey = BigInteger("8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", 16)
         lateinit var storage: Storage
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
@@ -47,7 +47,7 @@ class ContractStorageRawTXTests {
             }
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun cancelStorage() {
             storage.cancel()

@@ -1,6 +1,7 @@
 package de.gematik.kether.contracts
 import de.gematik.kether.abi.DataDecoder
 import de.gematik.kether.abi.DataEncoder
+import de.gematik.kether.abi.isTypeDynamic
 import de.gematik.kether.abi.types.*
 import de.gematik.kether.contracts.Contract
 import de.gematik.kether.contracts.Event
@@ -10,12 +11,11 @@ import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.keccak
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.math.BigInteger
-import java.security.PrivateKey
-
 @OptIn(ExperimentalSerializationApi::class)
 class Storage(
 eth: Eth,
-baseTransaction: Transaction = Transaction(), privateKey: BigInteger? = null
+baseTransaction: Transaction = Transaction(),
+privateKey: BigInteger? = null
 ) : Contract(eth, baseTransaction, privateKey) {
 companion object {
 // deployment
@@ -26,6 +26,7 @@ val functionInc = "inc()".keccak().copyOfRange(0, 4)
 val functionRetrieve = "retrieve()".keccak().copyOfRange(0, 4)
 val functionStore = "store(uint256)".keccak().copyOfRange(0, 4)
 }
+// tuples
 // events
 override val listOfEventDecoders: List<(Log) -> Event?> = listOf()
 // functions
@@ -38,7 +39,7 @@ fun retrieve(): AbiUint256 {
 val params = DataEncoder()
 .encode(Data4(functionRetrieve)).build()
 val decoder = DataDecoder(call(params))
-return decoder.next(AbiUint256::class)}
+return decoder.next(AbiUint256::class, ) as AbiUint256}
 suspend fun store(num: AbiUint256): TransactionReceipt {
 val params = DataEncoder()
 .encode(Data4(functionStore))

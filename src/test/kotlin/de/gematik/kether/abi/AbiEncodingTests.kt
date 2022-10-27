@@ -6,7 +6,8 @@ import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.extensions.toHex
 import de.gematik.kether.extensions.toRLP
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.Test
+import org.junit.jupiter.api.Test
+
 
 /**
  * Created by rk on 02.08.2022.

@@ -6,10 +6,8 @@ import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.math.BigInteger
 
 /**
@@ -17,14 +15,14 @@ import java.math.BigInteger
  * gematik.de
  */
 @ExperimentalSerializationApi
-class EthTestsRawTransactions {
+class EthRawTransactionsTests {
     companion object {
         val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
         val account2PrivateKey = BigInteger("8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", 16)
         var ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8545", "ws://ethereum1.lab.gematik.de:8546"))
         lateinit var storageAddress: Address
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
