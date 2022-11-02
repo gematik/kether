@@ -30,6 +30,14 @@ class AbiDecodingTests {
     }
 
     @Test
+    fun decodingAddress() {
+        val d = "0x0000000000000000000000000102030405060708090001020304050607080900" // value (20 byte stored in 32 byte field)
+        val result = DataDecoder(Data(d.hexToByteArray())).next(AbiAddress::class)
+        val r = AbiAddress("0x0102030405060708090001020304050607080900")
+        assert(result == r)
+    }
+
+    @Test
     fun decodingString() {
         val d = "0x0000000000000000000000000000000000000000000000000000000000000020" + // offset
                 "0000000000000000000000000000000000000000000000000000000000000004" + // length

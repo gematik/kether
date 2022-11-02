@@ -2,6 +2,7 @@ package de.gematik.kether.eth.types
 
 import de.gematik.kether.extensions.hexToByteArray
 import de.gematik.kether.eth.serializer.DataSerializer
+import de.gematik.kether.extensions.toHex
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
@@ -42,7 +43,12 @@ open class Data {
         return value.contentHashCode()
     }
 
+    override fun toString(): String {
+        return value.toHex()
+    }
+
     fun toByteArray() = value
+
 }
 
 @Serializable(with = DataSerializer::class)

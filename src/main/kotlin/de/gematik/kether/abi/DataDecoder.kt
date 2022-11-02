@@ -1,6 +1,7 @@
 package de.gematik.kether.abi
 
 import de.gematik.kether.abi.types.*
+import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Data
 import java.math.BigInteger
 import kotlin.reflect.KClass
@@ -45,6 +46,13 @@ class DataDecoder(data: Data) {
                 val bytes = byteArray.copyOfRange(pos, pos + 32)
                 pos += 32
                 AbiBytes32(bytes) as T
+            }
+
+            type == AbiAddress::class -> {
+                checkSize(type, 32)
+                val bytes = byteArray.copyOfRange(pos+12, pos + 32)
+                pos += 32
+                AbiAddress(bytes) as T
             }
 
             type.isSubclassOf(AbiTuple::class) -> {
