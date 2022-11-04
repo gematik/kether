@@ -1,7 +1,7 @@
 package de.gematik.kether.contracts
 
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.eth.Eth
-import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
@@ -20,20 +20,26 @@ import kotlin.random.Random
 class ContractStorageTests {
 
     companion object {
-        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+        val key = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         lateinit var storage: Storage
 
         @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
-                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
-                val receipt = Storage.deploy(ethereum1, account2Address)
+                val ethereum1 = Eth(
+                    Rpc(
+                        "http://ethereum1.lab.gematik.de:8547",
+                        "ws://ethereum1.lab.gematik.de:8546",
+                        isSigner = true
+                    )
+                )
+                val receipt = Storage.deploy(ethereum1, key.address)
                 val storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 storage = Storage(
                     ethereum1,
-                    Transaction(to = storageAddress, from = account2Address)
+                    Transaction(to = storageAddress, from = key.address)
                 )
             }
         }

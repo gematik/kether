@@ -19,8 +19,7 @@ import java.math.BigInteger
 @OptIn(ExperimentalSerializationApi::class)
 abstract class Contract(
     val eth: Eth,
-    val baseTransaction: Transaction = Transaction(),
-    val privateKey: BigInteger? = null
+    val baseTransaction: Transaction = Transaction()
 ) {
     private val scope = CoroutineScope(CoroutineName(this.toString()))
 
@@ -45,7 +44,7 @@ abstract class Contract(
     }
 
     companion object {
-        fun deploy(eth: Eth, from: Address, params: Data, privateKey: BigInteger? = null): TransactionReceipt {
+        fun deploy(eth: Eth, from: Address, params: Data): TransactionReceipt {
             return runBlocking {
                 val transaction = Transaction(
                     from = from,
@@ -53,21 +52,21 @@ abstract class Contract(
                     gasPrice = Quantity(0),
                     data = params
                 )
-                transact(eth, transaction, privateKey)
+                transact(eth, transaction)
             }
         }
 
-        suspend fun transact(eth: Eth, transaction: Transaction, privateKey: BigInteger?): TransactionReceipt {
+        suspend fun transact(eth: Eth, transaction: Transaction): TransactionReceipt {
             require(transaction.from!=null) {"sender address required to send transaction"}
             return withTimeout(10000) {
                 val tx = transaction.copy(
                     gas = eth.ethEstimateGas(transaction),
                     nonce = eth.ethGetTransactionCount(transaction.from, Quantity(Tag.pending))
                 )
-                if (privateKey != null) {
-                    eth.ethSendRawTransaction(Data(tx.sign(chainId = eth.chainId, privateKey = privateKey)))
-                } else {
+                if (eth.rpc.isSigner) {
                     eth.ethSendTransaction(tx)
+                } else {
+                    eth.ethSendRawTransaction(tx.sign(chainId = eth.chainId))
                 }.let {
                     val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
                     eth.notifications.first { it.params.subscription == subscription }
@@ -106,7 +105,7 @@ abstract class Contract(
         val transaction = baseTransaction.copy(
             data = params
         )
-        return Companion.transact(eth, transaction, privateKey)
+        return Companion.transact(eth, transaction)
     }
 
     suspend fun subscribe(eventSelector: Data32): String {

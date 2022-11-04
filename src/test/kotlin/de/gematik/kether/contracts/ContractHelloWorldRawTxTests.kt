@@ -1,5 +1,6 @@
 package de.gematik.kether.contracts
 
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.SubscriptionTypes
@@ -23,8 +24,7 @@ import java.util.*
 class ContractHelloWorldRawTxTests {
 
     companion object {
-        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
-        val account2PrivateKey = BigInteger("8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63", 16)
+        val account4 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
 
         lateinit var helloWorld: HelloWorld
 
@@ -34,13 +34,12 @@ class ContractHelloWorldRawTxTests {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8545", "ws://ethereum1.lab.gematik.de:8546"))
                 val greet = "Hello World"
-                val receipt = HelloWorld.deploy(ethereum1, account2Address, greet, account2PrivateKey)
+                val receipt = HelloWorld.deploy(ethereum1, account4.address, greet)
                 val helloWorldAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 helloWorld = HelloWorld(
                     ethereum1,
-                    Transaction(to = helloWorldAddress, from = account2Address),
-                    account2PrivateKey
+                    Transaction(to = helloWorldAddress, from = account4.address)
                 )
             }
         }

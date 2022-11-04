@@ -3,6 +3,7 @@ package de.gematik.kether.eth
 import de.gematik.kether.abi.DataDecoder
 import de.gematik.kether.abi.DataEncoder
 import de.gematik.kether.contracts.Storage
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test
 @ExperimentalSerializationApi
 class EthAssumingContractTests {
     companion object {
-        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+        val account1 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         val ethereum1 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8547"))
         lateinit var storageAddress: Address
 
@@ -26,7 +27,7 @@ class EthAssumingContractTests {
         fun storageDeploy() {
             runBlocking {
                 val eth = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
-                val receipt = Storage.deploy(eth, account2Address)
+                val receipt = Storage.deploy(eth, account1.address)
                 storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 eth.close()
@@ -52,7 +53,7 @@ class EthAssumingContractTests {
         val rpcResponse = ethereum1.ethSendTransaction(
             Transaction(
                 to = storageAddress,
-                from = account2Address,
+                from = account1.address,
                 data = DataEncoder()
                     .encode(Data4(Storage.functionStore))
                     .encode(num)

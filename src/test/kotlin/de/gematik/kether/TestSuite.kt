@@ -12,6 +12,7 @@ import org.junit.platform.suite.api.Suite
 @Suite
 @SelectPackages(
     "de.gematik.kether.extensions",
+    "de.gematik.kether.crypto",
     "de.gematik.kether.rpc",
     "de.gematik.kether.eth",
     "de.gematik.kether.abi",

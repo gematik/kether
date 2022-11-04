@@ -1,6 +1,8 @@
 package de.gematik.kether.extensions
 
+import de.gematik.kether.eth.types.Address
 import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.hyperledger.besu.crypto.SECPPublicKey
 
 /**
  * Calculates keccak hash.
@@ -19,4 +21,8 @@ fun ByteArray.keccak() : ByteArray{
         it.update(this)
         it.digest()
     }
+}
+
+fun SECPPublicKey.toAccount(): Address {
+    return Address(encodedBytes.toArray().keccak().copyOfRange(12, 32))
 }

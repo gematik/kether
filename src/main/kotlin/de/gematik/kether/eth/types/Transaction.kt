@@ -1,5 +1,6 @@
 package de.gematik.kether.eth.types
 
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.extensions.RlpEmpty
 import de.gematik.kether.extensions.keccak
 import de.gematik.kether.extensions.toRLP
@@ -25,7 +26,8 @@ data class Transaction(
     val nonce: Quantity? = null
 ) {
     @OptIn(ExperimentalSerializationApi::class)
-    fun sign(chainId: Quantity, privateKey: BigInteger): ByteArray {
+    fun sign(chainId: Quantity): Data {
+        require(from != null) { "from required to sign transaction" }
         val hash = listOf(
             nonce?.toRLP() ?: RlpEmpty,
             gasPrice?.toRLP() ?: RlpEmpty,
@@ -40,23 +42,24 @@ data class Transaction(
             RlpEmpty
         ).toRLP().keccak()
         val signer = SECP256K1()
-        val secPrivateKey = signer.createPrivateKey(privateKey)
-        val secKeyPair = signer.createKeyPair(secPrivateKey)
+        val secKeyPair = signer.createKeyPair(AccountStore.getAccount(from).privateKey)
         val signature = signer.sign(Bytes32.wrap(hash), secKeyPair)
         // EIP-155: "... v of the signature MUST be set to {0,1} + CHAIN_ID * 2 + 35
         // where {0,1} is the parity of the y value of the curve point for which r
         // is the x-value in the secp256k1 signing process.
         val v = BigInteger(byteArrayOf(signature.recId)) + chainId.toBigInteger() * BigInteger.TWO + 35.toBigInteger()
-        return listOf(
-            nonce?.toRLP() ?: RlpEmpty,
-            gasPrice?.toRLP() ?: RlpEmpty,
-            gas?.toRLP() ?: RlpEmpty,
-            to?.toRLP() ?: RlpEmpty,
-            value?.toRLP() ?: RlpEmpty,
-            data?.toRLP() ?: RlpEmpty,
-            v.toRLP(),
-            signature.r.toRLP(),
-            signature.s.toRLP()
-        ).toRLP()
+        return Data(
+            listOf(
+                nonce?.toRLP() ?: RlpEmpty,
+                gasPrice?.toRLP() ?: RlpEmpty,
+                gas?.toRLP() ?: RlpEmpty,
+                to?.toRLP() ?: RlpEmpty,
+                value?.toRLP() ?: RlpEmpty,
+                data?.toRLP() ?: RlpEmpty,
+                v.toRLP(),
+                signature.r.toRLP(),
+                signature.s.toRLP()
+            ).toRLP()
+        )
     }
 }

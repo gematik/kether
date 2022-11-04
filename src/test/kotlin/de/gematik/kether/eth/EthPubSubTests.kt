@@ -2,6 +2,7 @@ package de.gematik.kether.eth
 
 import de.gematik.kether.abi.types.toTopic
 import de.gematik.kether.contracts.HelloWorld
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.cancel
@@ -23,14 +24,14 @@ import java.util.*
 class EthPubSubTests {
 
     companion object {
-        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+        val account1 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         lateinit var helloWorld: HelloWorld
         lateinit var ethereum1: Eth
 
         @BeforeAll
         @JvmStatic
         fun prepare() {
-                ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
+                ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
         }
 
         @AfterAll
@@ -55,12 +56,12 @@ class EthPubSubTests {
     fun ethSubscribeLogs() {
         runBlocking {
             val newGreeting = "Greetings at ${Date()}"
-            val receipt = HelloWorld.deploy(ethereum1, account2Address, "Hello World")
+            val receipt = HelloWorld.deploy(ethereum1, account1.address, "Hello World")
             val helloWorldAddress = receipt.contractAddress!!
             assert(receipt.isSuccess)
             helloWorld = HelloWorld(
                 ethereum1,
-                Transaction(to = helloWorldAddress, from = account2Address)
+                Transaction(to = helloWorldAddress, from = account1.address)
             )
 
             launch {

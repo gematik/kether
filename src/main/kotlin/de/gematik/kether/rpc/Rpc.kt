@@ -28,7 +28,7 @@ import java.io.Closeable
 private val logger = KotlinLogging.logger {}
 
 @ExperimentalSerializationApi
-class Rpc(val url: String = "http://localhost:8547", val wsUrl: String? = "ws://localhost:8546") : Closeable {
+class Rpc(val url: String = "http://localhost:8545", val wsUrl: String? = "ws://localhost:8546", val isSigner: Boolean = false) : Closeable {
     private var id: Int = 0
 
     private val json = Json {

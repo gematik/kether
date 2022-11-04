@@ -1,5 +1,6 @@
 package de.gematik.kether.contracts
 
+import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Quantity
@@ -20,22 +21,22 @@ import org.junit.jupiter.api.Test
 @ExperimentalSerializationApi
 class ContractGLDTokenTests {
     companion object {
-        val account1Address = Address("0xB389e2Ac92361c81481aFeF1cBF29881005996a3")
-        val account2Address = Address("0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
+        val account1 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val account4 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
         lateinit var gldToken: GLDToken
 
         @BeforeAll
         @JvmStatic
         fun gldTokenDeploy() {
             runBlocking {
-                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546"))
+                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
                 val initialSupply = Quantity(1E18.toLong())
-                val receipt = GLDToken.deploy(ethereum1, account2Address, initialSupply)
+                val receipt = GLDToken.deploy(ethereum1, account1.address, initialSupply)
                 val gLDTokenAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 gldToken = GLDToken(
                     ethereum1,
-                    Transaction(to = gLDTokenAddress, from = account2Address)
+                    Transaction(to = gLDTokenAddress, from = account1.address)
                 )
             }
         }
@@ -49,7 +50,7 @@ class ContractGLDTokenTests {
 
     @Test
     fun gldTokenBalanceOf() {
-        val balance = gldToken.balanceOf(account2Address)
+        val balance = gldToken.balanceOf(account1.address)
         assert(balance == Quantity(1E18.toLong()))
     }
 
@@ -77,9 +78,9 @@ class ContractGLDTokenTests {
                     }
                 }
             }
-            val receipt = gldToken.transfer(account1Address, Quantity(1E16.toLong()))
+            val receipt = gldToken.transfer(account4.address, Quantity(1E16.toLong()))
             assert(receipt.isSuccess)
-            val balance = gldToken.balanceOf(account1Address)
+            val balance = gldToken.balanceOf(account4.address)
             assert(balance == Quantity(1E16.toLong()))
         }
     }
