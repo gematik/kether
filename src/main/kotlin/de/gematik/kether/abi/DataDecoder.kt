@@ -15,7 +15,7 @@ import kotlin.reflect.full.isSubclassOf
 class DataDecoder(data: Data) {
     private val byteArray = data.toByteArray()
     private var pos: Int = 0
-
+    private var start: Int = 0
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> next(type: KClass<T>): T {
         return when {
@@ -23,6 +23,7 @@ class DataDecoder(data: Data) {
                 checkSize(type, 4)
                 val bytes = byteArray.copyOfRange(0, 4)
                 pos += 4
+                start = pos
                 AbiSelector(bytes) as T
             }
 
@@ -35,7 +36,7 @@ class DataDecoder(data: Data) {
 
             type == AbiString::class -> {
                 checkSize(type, 32)
-                val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
+                val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt() + start
                 pos += 32
                 val length = BigInteger(byteArray.copyOfRange(offset, offset + 32)).toInt()
                 String(byteArray.copyOfRange(offset + 32, offset + 32 + length)) as T
@@ -59,7 +60,7 @@ class DataDecoder(data: Data) {
                 var dataDecoder = this
                 if (isTypeDynamic(type)) {
                     checkSize(type, 32)
-                    val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
+                    val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt() + start
                     pos += 32
                     dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset, byteArray.size)))
                 }
@@ -80,7 +81,7 @@ class DataDecoder(data: Data) {
         var len = dimensions.last()
         if (dimensions.last() < 0 || isTypeDynamic(type)) {
             checkSize(type, 32)
-            val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt()
+            val offset = BigInteger(byteArray.copyOfRange(pos, pos + 32)).toInt() + start
             pos += 32
             len = BigInteger(byteArray.copyOfRange(offset, offset + 32)).toInt()
             dataDecoder = DataDecoder(Data(byteArray.copyOfRange(offset + 32, byteArray.size)))

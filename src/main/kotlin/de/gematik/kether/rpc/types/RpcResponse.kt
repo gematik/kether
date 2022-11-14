@@ -1,6 +1,10 @@
 package de.gematik.kether.rpc.types
 
+import de.gematik.kether.abi.DataDecoder
+import de.gematik.kether.abi.types.AbiSelector
+import de.gematik.kether.abi.types.AbiString
 import de.gematik.kether.eth.types.Data
+import de.gematik.kether.extensions.toHex
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -44,8 +48,16 @@ class RpcResponse {
 
     inline fun <reified T> result(): T {
         val r = result
-        if (r == null) throw RpcException(error!!.code, error!!.message)
+        if (r == null) {
+            val message2 = if (error?.data != null) {
+                val dataDecoder = DataDecoder(error!!.data!!)
+                val selector = dataDecoder.next(AbiSelector::class)
+                "${selector.toByteArray().toHex()} - ${dataDecoder.next(AbiString::class)}"
+            } else {
+                ""
+            }
+            throw RpcException(error!!.code, "${error!!.message} - $message2")
+        }
         return Json.decodeFromJsonElement(r)
     }
-
 }

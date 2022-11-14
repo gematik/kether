@@ -48,6 +48,20 @@ class AbiDecodingTests {
     }
 
     @Test
+    fun decodingErrorData() {
+        val d = "0x01020304" + //selector
+                "0000000000000000000000000000000000000000000000000000000000000020" + // offset message
+                "0000000000000000000000000000000000000000000000000000000000000004" + // length
+                "7465737400000000000000000000000000000000000000000000000000000000" // utf8
+        val decoder = DataDecoder(Data(d.hexToByteArray()))
+        val selector = decoder.next(AbiSelector::class).toByteArray()
+        val result = decoder.next(AbiString::class)
+        val r = "test"
+        val s = ByteArray(4){(it+1).toByte()}
+        assert(selector.contentEquals(s) && result == r)
+    }
+
+    @Test
     fun decodingStaticArray() {
         val d = "0x0000000000000000000000000000000000000000000000000000000000000008" + // element 0
                 "0000000000000000000000000000000000000000000000000000000000000009" // element 1
