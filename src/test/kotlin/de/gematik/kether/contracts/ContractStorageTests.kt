@@ -1,6 +1,7 @@
 package de.gematik.kether.contracts
 
 import de.gematik.kether.crypto.AccountStore
+import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.eth.types.Transaction
@@ -20,7 +21,7 @@ import kotlin.random.Random
 class ContractStorageTests {
 
     companion object {
-        val key = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val key = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         lateinit var storage: Storage
 
         @BeforeAll

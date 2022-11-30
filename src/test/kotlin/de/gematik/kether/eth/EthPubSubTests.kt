@@ -3,6 +3,7 @@ package de.gematik.kether.eth
 import de.gematik.kether.abi.types.toTopic
 import de.gematik.kether.contracts.HelloWorld
 import de.gematik.kether.crypto.AccountStore
+import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.cancel
@@ -24,7 +25,7 @@ import java.util.*
 class EthPubSubTests {
 
     companion object {
-        val account1 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         lateinit var helloWorld: HelloWorld
         lateinit var ethereum1: Eth
 

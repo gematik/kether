@@ -1,6 +1,7 @@
 package de.gematik.kether.contracts
 
 import de.gematik.kether.crypto.AccountStore
+import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Quantity
@@ -21,8 +22,8 @@ import org.junit.jupiter.api.Test
 @ExperimentalSerializationApi
 class ContractGLDTokenTests {
     companion object {
-        val account1 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
-        val account4 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
+        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
         lateinit var gldToken: GLDToken
 
         @BeforeAll

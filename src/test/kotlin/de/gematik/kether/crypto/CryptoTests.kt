@@ -12,20 +12,20 @@ import org.junit.jupiter.api.Test
 class CryptoTests {
     @Test
     fun keyStoreGetKey() {
-        val key = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val key = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
         assert(key.alias == AccountStore.TEST_ACCOUNT_1)
         assert(key.address.toString() == "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73")
         assert(key.privateKey?.encodedBytes?.toArray()?.toHex() == "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63")
-        assert(key.type == AccountStore.KeyType.TEST)
+        assert(key.accountType == AccountStore.AccountType.TEST)
     }
 
     @Test
     fun keyStoreCreateKey() {
-        val success = AccountStore.createAccount("test", AccountStore.KeyType.IN_MEMORY)
+        val success = accountStore.createAccount("test", AccountStore.AccountType.IN_MEMORY, AccountStore.KeyType.SECP256K1)
         assert(success)
-        val key = AccountStore.getAccount("test")
+        val key = accountStore.getAccount("test")
         assert(key.alias == "test")
-        assert(key.type == AccountStore.KeyType.IN_MEMORY)
+        assert(key.accountType == AccountStore.AccountType.IN_MEMORY)
         assert(key.privateKey?.encodedBytes?.size() == 32)
     }
 

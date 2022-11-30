@@ -3,6 +3,7 @@ package de.gematik.kether.eth
 import de.gematik.kether.abi.DataEncoder
 import de.gematik.kether.contracts.Storage
 import de.gematik.kether.crypto.AccountStore
+import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.types.*
 import de.gematik.kether.rpc.Rpc
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test
 @ExperimentalSerializationApi
 class EthRawTransactionsTests {
     companion object {
-        val account2 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_2)
+        val account2 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_2)
         var ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8545", "ws://ethereum1.lab.gematik.de:8546"))
         lateinit var storageAddress: Address
 

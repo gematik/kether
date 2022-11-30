@@ -1,8 +1,8 @@
 package de.gematik.kether.contracts
 
 import de.gematik.kether.crypto.AccountStore
+import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
-import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.SubscriptionTypes
 import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
@@ -13,7 +13,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.math.BigInteger
 import java.util.*
 
 /**
@@ -24,7 +23,7 @@ import java.util.*
 class ContractHelloWorldRawTxTests {
 
     companion object {
-        val account4 = AccountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
+        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
 
         lateinit var helloWorld: HelloWorld
 

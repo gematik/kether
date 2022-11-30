@@ -23,6 +23,6 @@ fun ByteArray.keccak() : ByteArray{
     }
 }
 
-fun SECPPublicKey.toAccount(): Address {
+fun SECPPublicKey.toAccountAddress(): Address {
     return Address(encodedBytes.toArray().keccak().copyOfRange(12, 32))
 }
