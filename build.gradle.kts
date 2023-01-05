@@ -1,12 +1,12 @@
 plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
-    `maven-publish`
-    id("de.gematik.kether.codegen") version "1.0-SNAPSHOT"
+    id("maven-publish")
+    id("de.gematik.kether.codegen") version "1.0"
 }
 
 group = "de.gematik.kether"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
