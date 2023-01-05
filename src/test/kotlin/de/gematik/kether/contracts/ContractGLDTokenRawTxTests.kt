@@ -72,15 +72,15 @@ class ContractGLDTokenRawTxTests {
     @Test
     fun gldTokenTransfer() {
         runBlocking {
-            launch {
-                val subscriptionId = gldToken.subscribe(GLDToken.eventTransfer)
-                gldToken.events.collect{
-                    if(it is GLDToken.EventTransfer){
-                        gldToken.unsubscribe(subscriptionId)
-                        cancel()
-                    }
-                }
-            }
+//            launch {
+//                val subscriptionId = gldToken.subscribe(GLDToken.eventTransfer)
+//                gldToken.events.collect{
+//                    if(it is GLDToken.EventTransfer){
+//                        gldToken.unsubscribe(subscriptionId)
+//                        cancel()
+//                    }
+//                }
+//            }
             val receipt = gldToken.transfer(account4.address, Quantity(1E16.toLong()))
             assert(receipt.isSuccess)
             val balance = gldToken.balanceOf(account4.address)

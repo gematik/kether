@@ -30,7 +30,7 @@ class ContractStorageRawTXTests {
             runBlocking {
                 val ethereum1 = Eth(
                     Rpc(
-                        "http://ethereum1.lab.gematik.de:8547",
+                        "http://ethereum1.lab.gematik.de:8545",
                         "ws://ethereum1.lab.gematik.de:8546"
                     )
                 )
