@@ -6,6 +6,7 @@ import de.gematik.kether.extensions.toAccountAddress
 import mu.KotlinLogging
 import org.apache.tuweni.bytes.Bytes32
 import org.hyperledger.besu.crypto.SECP256K1
+import org.hyperledger.besu.crypto.SECP256R1
 import org.hyperledger.besu.crypto.SECPPrivateKey
 import kotlin.random.Random
 import kotlin.reflect.full.createInstance
@@ -19,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 
 val accountStore = AccountStore.getInstance()
 
-open class AccountStore private constructor() {
+open class AccountStore protected constructor() {
 
     companion object {
         // quorum test accounts: https://consensys.net/docs/goquorum/en/stable/tutorials/quorum-dev-quickstart/using-the-quickstart/
