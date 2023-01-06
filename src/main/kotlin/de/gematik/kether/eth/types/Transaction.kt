@@ -8,6 +8,7 @@ import de.gematik.kether.extensions.toRLP
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.apache.tuweni.bytes.Bytes32
 import org.hyperledger.besu.crypto.SECP256K1
+import org.hyperledger.besu.crypto.SECP256R1
 import java.math.BigInteger
 
 /**
@@ -42,8 +43,14 @@ data class Transaction(
             RlpEmpty,
             RlpEmpty
         ).toRLP().keccak()
-        val signer = SECP256K1()
-        val secKeyPair = signer.createKeyPair(accountStore.getAccount(from).privateKey)
+        val account = accountStore.getAccount(from)
+        val signer = when(account.keyType){
+            AccountStore.KeyType.SECP256K1 -> SECP256K1()
+            AccountStore.KeyType.SECP256R1 -> SECP256R1().apply {
+                disableNative()
+            }
+        }
+        val secKeyPair = signer.createKeyPair(account.privateKey)
         val signature = signer.sign(Bytes32.wrap(hash), secKeyPair)
         // EIP-155: "... v of the signature MUST be set to {0,1} + CHAIN_ID * 2 + 35
         // where {0,1} is the parity of the y value of the curve point for which r

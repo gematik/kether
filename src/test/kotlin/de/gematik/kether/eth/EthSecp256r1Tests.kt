@@ -14,45 +14,45 @@ import org.junit.jupiter.api.Test
  * gematik.de
  */
 @ExperimentalSerializationApi
-class EthTests {
+class EthSecp256r1Tests {
     companion object {
-        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
-        val ethereum1 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8545"))
+        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
+        val besu1 =  Eth(Rpc("http://besu1.lab.gematik.de:8545"))
     }
 
     @Test
     fun ethBlockNumber() {
-        val rpcResponse = ethereum1.ethBlockNumber()
+        val rpcResponse = besu1.ethBlockNumber()
         assert(rpcResponse > Quantity(0))
     }
 
     @Test
     fun ethChainId() {
-        val rpcResponse = ethereum1.ethChainId()
+        val rpcResponse = besu1.ethChainId()
         assert(rpcResponse > Quantity(0))
     }
 
     @Test
     fun ethGetBalance() {
-        val rpcResponse = ethereum1.ethGetBalance(account1.address, Quantity(Tag.latest))
+        val rpcResponse = besu1.ethGetBalance(account1.address, Quantity(Tag.latest))
         assert(rpcResponse > Quantity(0))
     }
 
     @Test
     fun ethAccounts() {
-        val rpcResponse = ethereum1.ethAccounts()
-        assert(rpcResponse.isNotEmpty())
+        val rpcResponse = besu1.ethAccounts()
+        assert(rpcResponse.isEmpty())
     }
 
     @Test
     fun ethGasPrice() {
-        val rpcResponse = ethereum1.ethGasPrice()
+        val rpcResponse = besu1.ethGasPrice()
         assert(rpcResponse >= Quantity(0))
     }
 
     @Test
     fun ethEstimateGas() {
-        val rpcResponse = ethereum1.ethEstimateGas(
+        val rpcResponse = besu1.ethEstimateGas(
             Transaction(
                 from = account1.address,
                 data = DataEncoder()

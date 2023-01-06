@@ -31,6 +31,14 @@ open class AccountStore protected constructor() {
         // Meta Mask - self created account
         val TEST_ACCOUNT_4 = "testAccount4" // ethsigner account4
 
+        // test accounts for SECP256R1
+        val TEST_ACCOUNT_1_R = "testAccount1_SECP256R1"
+        val TEST_ACCOUNT_2_R = "testAccount2_SECP256R1"
+        val TEST_ACCOUNT_3_R = "testAccount3_SECP256R1"
+        val TEST_ACCOUNT_4_R = "testAccount4_SECP256R1"
+
+
+
         private lateinit var instance: AccountStore
         fun getInstance(): AccountStore {
             if (!this::instance.isInitialized) {
@@ -63,18 +71,42 @@ open class AccountStore protected constructor() {
     init {
         createAndAddTestAccount(
             TEST_ACCOUNT_1,
+            KeyType.SECP256K1,
             "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_2,
+            KeyType.SECP256K1,
             "0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_3,
+            KeyType.SECP256K1,
             "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_4,
+            KeyType.SECP256K1,
+            "0x64f2a57bccb23a83e3b8bd0755cc66bfb362f175a4996e066fd964497c504128".hexToByteArray()
+        )
+        createAndAddTestAccount(
+            TEST_ACCOUNT_1_R,
+            KeyType.SECP256R1,
+            "0x4b49f3978424dd4ad9822f97ef050db21a6822031a4246769646a596a4a194c5".hexToByteArray()
+        )
+        createAndAddTestAccount(
+            TEST_ACCOUNT_2_R,
+            KeyType.SECP256R1,
+            "0xfe25c47e220516dbbfa0a8d81354905639d15a5dca385f8a43745df5ba79dbcd".hexToByteArray()
+        )
+        createAndAddTestAccount(
+            TEST_ACCOUNT_3_R,
+            KeyType.SECP256R1,
+            "0x5dad04b88e4cc83778ca8bf68bb29feb1e02ac9b1d366b1f804ee3537ca1d020".hexToByteArray()
+        )
+        createAndAddTestAccount(
+            TEST_ACCOUNT_4_R,
+            KeyType.SECP256R1,
             "0x64f2a57bccb23a83e3b8bd0755cc66bfb362f175a4996e066fd964497c504128".hexToByteArray()
         )
     }
@@ -119,13 +151,18 @@ open class AccountStore protected constructor() {
 
     private fun createAndAddTestAccount(
         alias: String,
+        keyType: KeyType,
         random: ByteArray
     ) {
-        val signer = SECP256K1()
-        val privateKey = signer.createPrivateKey(Bytes32.wrap(random))
-        val keyPair = signer.createKeyPair(privateKey)
-        val address = keyPair.publicKey.toAccountAddress()
-        accounts.add(Account(address, alias, AccountType.TEST, KeyType.SECP256K1, privateKey))
+        when(keyType){
+            KeyType.SECP256K1 -> SECP256K1()
+            KeyType.SECP256R1 -> SECP256R1()
+        }.run {
+            val privateKey = createPrivateKey(Bytes32.wrap(random))
+            val keyPair = createKeyPair(privateKey)
+            val address = keyPair.publicKey.toAccountAddress()
+            accounts.add(Account(address, alias, AccountType.TEST, keyType, privateKey))
+        }
     }
 
     open protected fun createInMemoryAccount(
@@ -134,15 +171,15 @@ open class AccountStore protected constructor() {
         keyType: KeyType,
         random: ByteArray
     ): Account? {
-        if(keyType!=KeyType.SECP256K1){
-            logger.info { "AccountStore only suppports SECP265K1 keys." }
-            return null
+        return when(keyType){
+            KeyType.SECP256K1 -> SECP256K1()
+            KeyType.SECP256R1 -> SECP256R1()
+        }.run {
+            val privateKey = createPrivateKey(Bytes32.wrap(random))
+            val keyPair = createKeyPair(privateKey)
+            val address = keyPair.publicKey.toAccountAddress()
+            Account(address, alias, accountType, keyType, privateKey)
         }
-        val signer = SECP256K1()
-        val privateKey = signer.createPrivateKey(Bytes32.wrap(random))
-        val keyPair = signer.createKeyPair(privateKey)
-        val address = keyPair.publicKey.toAccountAddress()
-        return Account(address, alias, accountType, keyType, privateKey)
     }
 
     open protected fun createHardwareBackedAccount(alias: String, type: AccountType, random: ByteArray): Account? {
