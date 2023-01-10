@@ -2,12 +2,7 @@ package de.gematik.kether.crypto
 
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.extensions.hexToByteArray
-import de.gematik.kether.extensions.toAccountAddress
 import mu.KotlinLogging
-import org.apache.tuweni.bytes.Bytes32
-import org.hyperledger.besu.crypto.SECP256K1
-import org.hyperledger.besu.crypto.SECP256R1
-import org.hyperledger.besu.crypto.SECPPrivateKey
 import kotlin.random.Random
 import kotlin.reflect.full.createInstance
 
@@ -38,7 +33,6 @@ open class AccountStore protected constructor() {
         val TEST_ACCOUNT_4_R = "testAccount4_SECP256R1"
 
 
-
         private lateinit var instance: AccountStore
         fun getInstance(): AccountStore {
             if (!this::instance.isInitialized) {
@@ -59,54 +53,52 @@ open class AccountStore protected constructor() {
         val address: Address,
         val alias: String,
         val accountType: AccountType,
-        val keyType: KeyType,
-        val privateKey: SECPPrivateKey?
+        val keyPair: EcdsaKeyPair
     )
 
     enum class AccountType { TEST, IN_MEMORY, HARDWARE_BACKED }
-    enum class KeyType { SECP256K1, SECP256R1 }
 
     private val accounts = mutableListOf<Account>()
 
     init {
         createAndAddTestAccount(
             TEST_ACCOUNT_1,
-            KeyType.SECP256K1,
+            EllipticCurve.secp256k1,
             "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_2,
-            KeyType.SECP256K1,
+            EllipticCurve.secp256k1,
             "0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_3,
-            KeyType.SECP256K1,
+            EllipticCurve.secp256k1,
             "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_4,
-            KeyType.SECP256K1,
+            EllipticCurve.secp256k1,
             "0x64f2a57bccb23a83e3b8bd0755cc66bfb362f175a4996e066fd964497c504128".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_1_R,
-            KeyType.SECP256R1,
+            EllipticCurve.secp256r1,
             "0x4b49f3978424dd4ad9822f97ef050db21a6822031a4246769646a596a4a194c5".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_2_R,
-            KeyType.SECP256R1,
+            EllipticCurve.secp256r1,
             "0xfe25c47e220516dbbfa0a8d81354905639d15a5dca385f8a43745df5ba79dbcd".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_3_R,
-            KeyType.SECP256R1,
+            EllipticCurve.secp256r1,
             "0x5dad04b88e4cc83778ca8bf68bb29feb1e02ac9b1d366b1f804ee3537ca1d020".hexToByteArray()
         )
         createAndAddTestAccount(
             TEST_ACCOUNT_4_R,
-            KeyType.SECP256R1,
+            EllipticCurve.secp256r1,
             "0x64f2a57bccb23a83e3b8bd0755cc66bfb362f175a4996e066fd964497c504128".hexToByteArray()
         )
     }
@@ -122,7 +114,7 @@ open class AccountStore protected constructor() {
     fun createAccount(
         alias: String,
         accountType: AccountType,
-        keyType: KeyType,
+        curve: EllipticCurve,
         privateKey: ByteArray? = null
     ): Boolean {
         return when (accountType) {
@@ -133,7 +125,7 @@ open class AccountStore protected constructor() {
 
             AccountType.IN_MEMORY -> {
                 val account =
-                    createInMemoryAccount(alias, accountType, keyType, privateKey ?: Random.nextBytes(32))
+                    createInMemoryAccount(alias, accountType, curve, privateKey ?: Random.nextBytes(32))
                         ?: return false
                 accounts.add(account)
                 true
@@ -151,35 +143,25 @@ open class AccountStore protected constructor() {
 
     private fun createAndAddTestAccount(
         alias: String,
-        keyType: KeyType,
+        curve: EllipticCurve,
         random: ByteArray
     ) {
-        when(keyType){
-            KeyType.SECP256K1 -> SECP256K1()
-            KeyType.SECP256R1 -> SECP256R1()
-        }.run {
-            val privateKey = createPrivateKey(Bytes32.wrap(random))
-            val keyPair = createKeyPair(privateKey)
-            val address = keyPair.publicKey.toAccountAddress()
-            accounts.add(Account(address, alias, AccountType.TEST, keyType, privateKey))
-        }
+        val privateKey = EcdsaPrivateKey(random, curve)
+        val publicKey = EcdsaPublicKey(privateKey)
+        val address = publicKey.toAccountAddress()
+        accounts.add(Account(address, alias, AccountType.TEST, EcdsaKeyPair(privateKey,publicKey)))
     }
 
     open protected fun createInMemoryAccount(
         alias: String,
         accountType: AccountType,
-        keyType: KeyType,
+        curve: EllipticCurve,
         random: ByteArray
     ): Account? {
-        return when(keyType){
-            KeyType.SECP256K1 -> SECP256K1()
-            KeyType.SECP256R1 -> SECP256R1()
-        }.run {
-            val privateKey = createPrivateKey(Bytes32.wrap(random))
-            val keyPair = createKeyPair(privateKey)
-            val address = keyPair.publicKey.toAccountAddress()
-            Account(address, alias, accountType, keyType, privateKey)
-        }
+        val privateKey = EcdsaPrivateKey(random, curve)
+        val publicKey = EcdsaPublicKey(privateKey)
+        val address = publicKey.toAccountAddress()
+        return Account(address, alias, accountType, EcdsaKeyPair(privateKey,publicKey))
     }
 
     open protected fun createHardwareBackedAccount(alias: String, type: AccountType, random: ByteArray): Account? {

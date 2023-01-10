@@ -10,9 +10,6 @@ version = "1.0"
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://hyperledger.jfrog.io/artifactory/besu-maven/")
-    }
 }
 
 dependencies {
@@ -26,7 +23,6 @@ dependencies {
     implementation("org.bouncycastle:bcprov-ext-jdk18on:1.71")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.2.11")
-    implementation("org.hyperledger.besu.internal:crypto:22.7.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
     testImplementation("org.junit.platform:junit-platform-suite-engine:1.9.1")
 }
