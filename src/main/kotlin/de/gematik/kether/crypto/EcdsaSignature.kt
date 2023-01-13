@@ -1,6 +1,7 @@
 package de.gematik.kether.crypto
 
 import de.gematik.kether.eth.types.Quantity
+import de.gematik.kether.extensions.toByteArray
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.asn1.x9.X9IntegerConverter
 import org.bouncycastle.crypto.params.ECDomainParameters
@@ -10,13 +11,15 @@ import java.math.BigInteger
 import java.util.*
 
 class EcdsaSignature(
-    val r: BigInteger,
-    s: BigInteger,
+    val r: ByteArray,
+    s: ByteArray,
     var recId: Byte? = null,
-    val ecDomainParameters: ECDomainParameters
+    val curve: EllipticCurve
 ) {
 
     val hashLength = 32
+    internal val ecDomainParameters =
+        SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) }
 
     // Automatically adjust the S component to be less than or equal to half the curve
     // order, if necessary. This is required because for every signature (r,s) the signature
@@ -30,56 +33,66 @@ class EcdsaSignature(
     // N = 10
     // s = 8, so (-8 % 10 == 2) thus both (r, 8) and (r, 2) are valid solutions.
     // 10 - 8 == 2, giving us always the latter solution, which is canonical.
-    val s = if (s > ecDomainParameters.curve.order / BigInteger.TWO) {
-        ecDomainParameters.n - s
+    val sBigInteger = BigInteger(1,s)
+    val s = if (sBigInteger > ecDomainParameters.curve.order / BigInteger.TWO) {
+        (ecDomainParameters.n - sBigInteger).toByteArray(ecDomainParameters.curve.fieldSize/8)
     } else {
         s
     }
 
     init {
-        require(r.bitLength() <= ecDomainParameters.curve.fieldSize) { "r too big" }
-        require(s.bitLength() <= ecDomainParameters.curve.fieldSize) { "s too big" }
+        require(r.size == ecDomainParameters.curve.fieldSize/8) { "r wrong size: expected ${ecDomainParameters.curve.fieldSize/8} but was ${r.size}" }
+        require(s.size == ecDomainParameters.curve.fieldSize/8) { "s wrong size: expected ${ecDomainParameters.curve.fieldSize/8} but was ${r.size}" }
     }
 
     constructor (
-        r: BigInteger,
-        s: BigInteger,
-        recId: Byte? = null,
-        curve: EllipticCurve = EllipticCurve.secp256k1
-    ) : this(
-        r,
-        s,
-        recId,
-        SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) })
-
-    constructor (
-        r: BigInteger,
-        s: BigInteger,
-        v: BigInteger,
+        r: ByteArray,
+        s: ByteArray,
+        v: Byte?,
         chainId: Quantity,
         curve: EllipticCurve = EllipticCurve.secp256k1
     ) : this(
         r,
         s,
-        (v - 35.toBigInteger() -  chainId.toBigInteger() * BigInteger.TWO).toByte(),
+        v?.let{(it.toInt() - 35 - chainId.toBigInteger().toInt() * 2).toByte()},
         curve
     )
 
-    fun getV(chainId : Quantity) : BigInteger {
+    constructor (
+        r: BigInteger,
+        s: BigInteger,
+        curve: EllipticCurve = EllipticCurve.secp256k1
+    ) : this(
+        r.toByteArray(SECNamedCurves.getByName(curve.name).curve.fieldSize/8),
+        s.toByteArray(SECNamedCurves.getByName(curve.name).curve.fieldSize/8),
+        null,
+        curve
+    )
+
+    constructor (
+        signatureBytes: ByteArray,
+        curve: EllipticCurve = EllipticCurve.secp256k1
+    ) : this(
+        signatureBytes.copyOfRange(0,32),
+        signatureBytes.copyOfRange(32,64),
+        if(signatureBytes.size > 64) signatureBytes.get(65) else null,
+        curve
+    )
+
+    fun getV(chainId: Quantity): BigInteger {
         // EIP-155: "... v of the signature MUST be set to {0,1} + CHAIN_ID * 2 + 35
         // where {0,1} is the parity of the y value of the curve point for which r
         // is the x-value in the secp256k1 signing process.
-        check(recId!=null){"recId required for complete signature"}
+        check(recId != null) { "recId required for complete signature" }
         return BigInteger(byteArrayOf(recId!!)) + chainId.toBigInteger() * BigInteger.TWO + 35.toBigInteger()
     }
 
     fun extendSignature(publicKey: EcdsaPublicKey, messageHash: ByteArray) {
         // Find the right recId by trail and error.
         var recId = -1
-        val pubKey = BigInteger(byteArrayOf(0) + publicKey.encoded)
         for (i in 0..3) {
             val k = recoverPublicKey(i, messageHash)
-            if (k != null && k == pubKey) {
+            if (k != null &&  k == publicKey) {
                 recId = i
                 break
             }
@@ -92,17 +105,31 @@ class EcdsaSignature(
         this.recId = recId.toByte()
     }
 
-    fun recoverPublicKey(messageHash: ByteArray): BigInteger? {
-        return recId?.let { recoverPublicKey(it.toInt(), messageHash) }
+    fun recoverPublicKey(messageHash: ByteArray): EcdsaPublicKey? {
+        return recId?.let {
+            recoverPublicKey(it.toInt(), messageHash)
+        }
     }
 
-    private fun recoverPublicKey(recId: Int, messageHash: ByteArray): BigInteger? {
+    fun getAlgorithm(): String {
+        return SignatureAlgorithm.ECDSA.name
+    }
+
+    fun getEncoded() : ByteArray{
+        return r + s + if(recId!=null) byteArrayOf(recId!!) else byteArrayOf()
+    }
+
+    private fun recoverPublicKey(recId: Int, messageHash: ByteArray): EcdsaPublicKey? {
         require(messageHash.size == hashLength) { "incorrect hash length: expected 32, but was ${messageHash.size}" }
-        // 1.0 For j from 0 to h (h == recId here and the loop is outside this function)
+        // An elliptic curve public key Q for which (r, s) is a valid signature on message M.
+        // messageHash is hash of M
+        val sigR = BigInteger(1,r)
+        val sigS = BigInteger(1,s)
+        // 1 For j from 0 to h (h == recId here and the loop is outside this function)
         // 1.1 Let x = r + jn
         val n = ecDomainParameters.n // Curve order.
         val i = (recId / 2).toBigInteger()
-        val x = r + (i * n)
+        val x = sigR + (i * n)
         // 1.2. Convert the integer x to an octet string X of length mlen using the conversion
         // routine specified in Section 2.3.7, where mlen = ⌈(log2 p)/8⌉ or mlen = ⌈m/8⌉.
         // 1.3. Convert the octet string (16 set binary digits)||X to an elliptic curve point R
@@ -110,20 +137,20 @@ class EcdsaSignature(
         // routine outputs "invalid", then do another iteration of Step 1.
         //
         // More concisely, what these points mean is to use X as a compressed public key.
-        if (x.compareTo(ecDomainParameters.curve.field.characteristic) >= 0) {
+        if (x >= ecDomainParameters.curve.field.characteristic) {
             // Cannot have point co-ordinates larger than this as everything takes place modulo Q.
             return null
         }
         // Compressed keys require you to know an extra bit of data about the y-coord as there are
         // two possibilities. So it's encoded in the recId.
-        val r = decompressKey(x, (recId and 1) == 1)
+        val ecPointR = decompressKey(x, (recId and 1) == 1)
         // 1.4. If nR != point at infinity, then do another iteration of Step 1 (callers
         // responsibility).
-        if (!r.multiply(n).isInfinity) {
+        if (!ecPointR.multiply(n).isInfinity) {
             return null
         }
         // 1.5. Compute e from M using Steps 2 and 3 of ECDSA signature verification.
-        val e = BigInteger(byteArrayOf(0) + messageHash)
+        val e = BigInteger(1, messageHash)
         // 1.6. For k from 1 to 2 do the following. (loop is outside this function via
         // iterating recId)
         // 1.6.1. Compute a candidate public key as:
@@ -139,16 +166,16 @@ class EcdsaSignature(
         // example the additive inverse of 3 modulo 11 is 8 because 3 + 8 mod 11 = 0, and
         // -3 mod 11 = 8.
         val eInv = BigInteger.ZERO.subtract(e).mod(n)
-        val rInv = this.r.modInverse(n)
-        val srInv = rInv.multiply(s).mod(n)
+        val rInv = sigR.modInverse(n)
+        val srInv = rInv.multiply(sigS).mod(n)
         val eInvrInv = rInv.multiply(eInv).mod(n)
-        val q = ECAlgorithms.sumOfTwoMultiplies(ecDomainParameters.g, eInvrInv, r, srInv)
+        val q = ECAlgorithms.sumOfTwoMultiplies(ecDomainParameters.g, eInvrInv, ecPointR, srInv)
         if (q.isInfinity) {
             return null
         }
         val qBytes = q.getEncoded(false)
-        // We remove the prefix
-        return BigInteger(1, Arrays.copyOfRange(qBytes, 1, qBytes.size))
+        // We remove the prefix and return point as public key
+        return EcdsaPublicKey(qBytes.copyOfRange(1, qBytes.size), curve)
     }
 
     // Decompress a compressed public key (x co-ord and low-bit of y-coord).

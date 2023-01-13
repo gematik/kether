@@ -2,22 +2,27 @@ package de.gematik.kether.crypto
 
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.extensions.keccak
+import org.bouncycastle.asn1.sec.SECNamedCurves
+import org.bouncycastle.crypto.params.ECDomainParameters
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.crypto.signers.ECDSASigner
-import org.bouncycastle.math.ec.FixedPointCombMultiplier
 import java.math.BigInteger
 import java.security.PublicKey
 
 class EcdsaPublicKey(
-    privateKey: EcdsaPrivateKey
+    private val encoded: ByteArray,
+    val curve: EllipticCurve
 ) : PublicKey {
-    val curve = privateKey.curve
-    val algorithm = privateKey.algorithm
-    val ecDomainParameters = privateKey.ecDomainParameters
-    private val encoded = createEcdsaPublicKeyEncoded(privateKey)
+
+    internal val ecDomainParameters =
+        SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) }
+
+    init {
+        check(encoded.size == ecDomainParameters.curve.fieldSize / 4) { "wrong encoded size" }
+    }
 
     override fun getAlgorithm(): String {
-        return algorithm.name
+        return SignatureAlgorithm.ECDSA.name
     }
 
     override fun getFormat(): String? {
@@ -28,26 +33,21 @@ class EcdsaPublicKey(
         return encoded
     }
 
-    private fun createEcdsaPublicKeyEncoded(privateKey: EcdsaPrivateKey): ByteArray {
-        var privKey = BigInteger(byteArrayOf(0x0) + privateKey.encoded)
-        if (privKey.bitLength() > ecDomainParameters.n.bitLength()) {
-            privKey = privKey.mod(ecDomainParameters.n)
-        }
-        val point = FixedPointCombMultiplier().multiply(ecDomainParameters.g, privKey)
-        return point.getEncoded(false).copyOfRange(1, 65)
-    }
-
     fun toAccountAddress(): Address {
         return Address(encoded.keccak().copyOfRange(12, 32))
     }
 
-    fun verify(messageHash: ByteArray, ecdsaSignature: EcdsaSignature) : Boolean {
+    fun verify(messageHash: ByteArray, ecdsaSignature: EcdsaSignature): Boolean {
         val signer = ECDSASigner(curve.dsakCalculator());
-        val ecPublicKeyParameters = ECPublicKeyParameters(ecDomainParameters.curve.decodePoint(byteArrayOf(4) + encoded), ecDomainParameters)
+        val ecPublicKeyParameters =
+            ECPublicKeyParameters(ecDomainParameters.curve.decodePoint(byteArrayOf(4) + encoded), ecDomainParameters)
         signer.init(false, ecPublicKeyParameters)
         return kotlin.runCatching {
-            signer.verifySignature(messageHash, ecdsaSignature.r, ecdsaSignature.s)
+            signer.verifySignature(messageHash, BigInteger(1, ecdsaSignature.r), BigInteger(1, ecdsaSignature.s))
         }.getOrElse { false }
     }
+
+    override fun equals(other: Any?) =
+        other is EcdsaPublicKey && other.encoded.contentEquals(this.encoded) && other.curve == this.curve
 
 }

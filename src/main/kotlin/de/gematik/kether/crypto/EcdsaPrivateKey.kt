@@ -5,16 +5,17 @@ import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters
 import org.bouncycastle.crypto.signers.ECDSASigner
+import org.bouncycastle.math.ec.FixedPointCombMultiplier
 import java.math.BigInteger
 import java.security.PrivateKey
 
 class EcdsaPrivateKey(
     private val encoded: ByteArray,
-    val curve: EllipticCurve,
-    val algorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA
+    val curve: EllipticCurve
 ) : PrivateKey {
 
-    internal val ecDomainParameters = SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) }
+    internal val ecDomainParameters =
+        SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) }
 
     init {
         require(encoded.size == ecDomainParameters.curve.fieldSize / 8) { "invalid length of encoded key - ${ecDomainParameters.curve.fieldSize / 8} expected, but was ${encoded.size}" }
@@ -23,15 +24,13 @@ class EcdsaPrivateKey(
     constructor(
         encodedAsString: String,
         curve: EllipticCurve = EllipticCurve.secp256k1,
-        algorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA
     ) : this(
         encodedAsString.hexToByteArray(),
-        curve,
-        algorithm
+        curve
     )
 
     override fun getAlgorithm(): String {
-        return algorithm.name
+        return SignatureAlgorithm.ECDSA.name
     }
 
     override fun getFormat(): String? {
@@ -45,10 +44,21 @@ class EcdsaPrivateKey(
     fun sign(messageHash: ByteArray, publicKey: EcdsaPublicKey? = null): EcdsaSignature {
         val signer = ECDSASigner(curve.dsakCalculator());
         val ecPrivateKeyParameters = ECPrivateKeyParameters(
-            BigInteger(byteArrayOf(0) + encoded), ecDomainParameters
+            BigInteger(1, encoded), ecDomainParameters
         );
         signer.init(true, ecPrivateKeyParameters);
-        val components = signer.generateSignature (messageHash);
-        return  EcdsaSignature(components[0], components[1], null, ecDomainParameters).apply { publicKey?.let{extendSignature(it, messageHash)}
+        val components = signer.generateSignature(messageHash);
+        return EcdsaSignature(components[0], components[1], curve).apply {
+            publicKey?.let { extendSignature(it, messageHash) }
+        }
     }
-}}
+
+    public fun createEcdsaPublicKey(): EcdsaPublicKey {
+        var privKey = BigInteger(1, encoded)
+        if (privKey.bitLength() > ecDomainParameters.n.bitLength()) {
+            privKey = privKey.mod(ecDomainParameters.n)
+        }
+        val point = FixedPointCombMultiplier().multiply(ecDomainParameters.g, privKey)
+        return EcdsaPublicKey(point.getEncoded(false).copyOfRange(1, 65), curve)
+    }
+}

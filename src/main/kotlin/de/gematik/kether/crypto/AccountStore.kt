@@ -147,7 +147,7 @@ open class AccountStore protected constructor() {
         random: ByteArray
     ) {
         val privateKey = EcdsaPrivateKey(random, curve)
-        val publicKey = EcdsaPublicKey(privateKey)
+        val publicKey = privateKey.createEcdsaPublicKey()
         val address = publicKey.toAccountAddress()
         accounts.add(Account(address, alias, AccountType.TEST, EcdsaKeyPair(privateKey,publicKey)))
     }
@@ -159,7 +159,7 @@ open class AccountStore protected constructor() {
         random: ByteArray
     ): Account? {
         val privateKey = EcdsaPrivateKey(random, curve)
-        val publicKey = EcdsaPublicKey(privateKey)
+        val publicKey = privateKey.createEcdsaPublicKey()
         val address = publicKey.toAccountAddress()
         return Account(address, alias, accountType, EcdsaKeyPair(privateKey,publicKey))
     }
