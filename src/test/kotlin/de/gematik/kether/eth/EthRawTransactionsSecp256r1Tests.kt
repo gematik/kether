@@ -19,14 +19,14 @@ import org.junit.jupiter.api.Test
 class EthRawTransactionsSecp256r1Tests {
     companion object {
         val account2 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_2_R)
-        var besu1 = Eth(Rpc("http://besu1.lab.gematik.de:8545", "ws://besu1.lab.gematik.de:8546"))
+        var besu = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
         lateinit var storageAddress: Address
 
         @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
-                val eth = Eth(Rpc("http://besu1.lab.gematik.de:8545", "ws://besu1.lab.gematik.de:8546"))
+                val eth = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
                 val receipt = Storage.deploy(eth, account2.address)
                 storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
@@ -37,18 +37,18 @@ class EthRawTransactionsSecp256r1Tests {
 
     @Test
     fun ethSendRawTransaction() {
-        val rpcResponse = besu1.ethSendRawTransaction(
+        val rpcResponse = besu.ethSendRawTransaction(
             Transaction(
-                nonce = besu1.ethGetTransactionCount(account2.address, Quantity(Tag.pending)),
+                nonce = besu.ethGetTransactionCount(account2.address, Quantity(Tag.pending)),
                 gasPrice = Quantity(0),
-                gas = Quantity(10000000),
+                gas = Quantity(100000),
                 value = Quantity(0),
                 to = storageAddress,
                 from = account2.address,
                 data = DataEncoder()
                     .encode(Data4(Storage.functionInc))
                     .build()
-            ).sign(besu1.chainId)
+            ).sign(besu.chainId)
         )
         assert(rpcResponse != Data32("0x0")) // transaction hash not equal null hash
     }
@@ -56,9 +56,9 @@ class EthRawTransactionsSecp256r1Tests {
     @Test
     fun ethSendRawTransactionWithParameters() {
         val num = Quantity(10)
-        val rpcResponse = besu1.ethSendRawTransaction(
+        val rpcResponse = besu.ethSendRawTransaction(
             Transaction(
-                nonce = besu1.ethGetTransactionCount(account2.address, Quantity(Tag.pending)),
+                nonce = besu.ethGetTransactionCount(account2.address, Quantity(Tag.pending)),
                 gasPrice = Quantity(0),
                 gas = Quantity(100000),
                 value = Quantity(0),
@@ -68,7 +68,7 @@ class EthRawTransactionsSecp256r1Tests {
                     .encode(Data4(Storage.functionStore))
                     .encode(num)
                     .build()
-            ).sign(besu1.chainId)
+            ).sign(besu.chainId)
         )
         assert(rpcResponse != Data32("0x0")) // transaction hash not equal null hash
     }
