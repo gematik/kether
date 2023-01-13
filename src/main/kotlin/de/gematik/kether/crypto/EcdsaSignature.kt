@@ -75,7 +75,7 @@ class EcdsaSignature(
     ) : this(
         signatureBytes.copyOfRange(0,32),
         signatureBytes.copyOfRange(32,64),
-        if(signatureBytes.size > 64) signatureBytes.get(65) else null,
+        if(signatureBytes.size > 64) signatureBytes.get(64) else null,
         curve
     )
 
