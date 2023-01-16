@@ -44,10 +44,10 @@ open class EcdsaPrivateKey(
     }
 
     open fun sign(messageHash: ByteArray, publicKey: EcdsaPublicKey? = null): EcdsaSignature {
-        val signer = ECDSASigner(curve.dsakCalculator());
+        val signer = ECDSASigner(curve.dsakCalculator())
         val ecPrivateKeyParameters = ECPrivateKeyParameters(
             BigInteger(1, encoded), ecDomainParameters
-        );
+        )
         signer.init(true, ecPrivateKeyParameters);
         val components = signer.generateSignature(messageHash);
         return EcdsaSignature(components[0], components[1], curve).apply {
