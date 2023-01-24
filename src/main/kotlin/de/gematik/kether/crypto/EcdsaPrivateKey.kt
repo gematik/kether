@@ -9,8 +9,8 @@ import org.bouncycastle.math.ec.FixedPointCombMultiplier
 import java.math.BigInteger
 import java.security.PrivateKey
 
-class EcdsaPrivateKey(
-    private val encoded: ByteArray,
+open class EcdsaPrivateKey(
+    private val encoded: ByteArray?,
     val curve: EllipticCurve
 ) : PrivateKey {
 
@@ -18,7 +18,9 @@ class EcdsaPrivateKey(
         SECNamedCurves.getByName(curve.name).let { ECDomainParameters(it.curve, it.g, it.n, it.h, it.seed) }
 
     init {
-        require(encoded.size == ecDomainParameters.curve.fieldSize / 8) { "invalid length of encoded key - ${ecDomainParameters.curve.fieldSize / 8} expected, but was ${encoded.size}" }
+        if (encoded != null) {
+            require(encoded.size == ecDomainParameters.curve.fieldSize / 8) { "invalid length of encoded key - ${ecDomainParameters.curve.fieldSize / 8} expected, but was ${encoded.size}" }
+        }
     }
 
     constructor(
@@ -37,15 +39,15 @@ class EcdsaPrivateKey(
         return null
     }
 
-    override fun getEncoded(): ByteArray {
+    override fun getEncoded(): ByteArray? {
         return encoded
     }
 
-    fun sign(messageHash: ByteArray, publicKey: EcdsaPublicKey? = null): EcdsaSignature {
-        val signer = ECDSASigner(curve.dsakCalculator());
+    open fun sign(messageHash: ByteArray, publicKey: EcdsaPublicKey? = null): EcdsaSignature {
+        val signer = ECDSASigner(curve.dsakCalculator())
         val ecPrivateKeyParameters = ECPrivateKeyParameters(
             BigInteger(1, encoded), ecDomainParameters
-        );
+        )
         signer.init(true, ecPrivateKeyParameters);
         val components = signer.generateSignature(messageHash);
         return EcdsaSignature(components[0], components[1], curve).apply {
@@ -53,7 +55,8 @@ class EcdsaPrivateKey(
         }
     }
 
-    public fun createEcdsaPublicKey(): EcdsaPublicKey {
+    open fun createEcdsaPublicKey(): EcdsaPublicKey {
+        require(encoded!=null){"cannot create public key for private key null"}
         var privKey = BigInteger(1, encoded)
         if (privKey.bitLength() > ecDomainParameters.n.bitLength()) {
             privKey = privKey.mod(ecDomainParameters.n)
