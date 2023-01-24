@@ -8,6 +8,7 @@ import de.gematik.kether.extensions.toHex
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -57,6 +58,21 @@ class RpcResponse {
                 ""
             }
             throw RpcException(error!!.code, "${error!!.message} - $message2")
+        }
+        return Json.decodeFromJsonElement(r)
+    }
+
+    inline fun <reified T> resultOrNull(): T? {
+        val r = result
+        if (r == null) {
+            val message2 = if (error?.data != null) {
+                val dataDecoder = DataDecoder(error!!.data!!)
+                val selector = dataDecoder.next(AbiSelector::class)
+                "${selector.toByteArray().toHex()} - ${dataDecoder.next(AbiString::class)}"
+            } else {
+                ""
+            }
+            return null
         }
         return Json.decodeFromJsonElement(r)
     }

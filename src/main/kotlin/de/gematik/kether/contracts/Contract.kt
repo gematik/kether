@@ -68,13 +68,16 @@ abstract class Contract(
                 } else {
                     eth.ethSendRawTransaction(tx.sign(chainId = eth.chainId))
                 }.let {
-                    val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
-                    eth.notifications.first { it.params.subscription == subscription }
-                    eth.ethUnsubscribe(subscription)
-                    val receipt = it.let {
-                        eth.ethGetTransactionReceipt(it)
+                    var receipt: TransactionReceipt? = null
+                    while(receipt == null){
+                        val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
+                        eth.notifications.first { it.params.subscription == subscription }
+                        eth.ethUnsubscribe(subscription)
+                        val receipt = it.let {
+                            eth.ethGetTransactionReceipt(it)
+                        }
                     }
-                    receipt
+                    receipt?: throw Exception("Invalid Receipt")
                 }
             }
         }

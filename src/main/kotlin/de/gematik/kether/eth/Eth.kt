@@ -150,8 +150,8 @@ class Eth(val rpc: Rpc) : Closeable {
      * @return transaction hash, or the zero hash if the transaction is not yet available.
      * @throws RpcException if failure
      */
-    fun ethGetTransactionReceipt(hash: Data32) : TransactionReceipt {
-        return rpc.call(RpcRequest(EthMethods.eth_getTransactionReceipt, listOf(hash))).result()
+    fun ethGetTransactionReceipt(hash: Data32) : TransactionReceipt? {
+        return rpc.call(RpcRequest(EthMethods.eth_getTransactionReceipt, listOf(hash))).resultOrNull()
     }
 
     /**

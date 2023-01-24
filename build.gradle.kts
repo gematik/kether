@@ -20,7 +20,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("org.bouncycastle:bcprov-jdk18on:1.71")
-    implementation("org.bouncycastle:bcprov-ext-jdk18on:1.71")
+    //implementation("org.bouncycastle:bcprov-ext-jdk18on:1.71")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
