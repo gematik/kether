@@ -30,7 +30,7 @@ class ContractGLDTokenTests {
         @JvmStatic
         fun gldTokenDeploy() {
             runBlocking {
-                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
+                val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
                 val initialSupply = Quantity(1E18.toLong())
                 val receipt = GLDToken.deploy(ethereum1, account1.address, initialSupply)
                 val gLDTokenAddress = receipt.contractAddress!!

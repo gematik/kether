@@ -30,8 +30,8 @@ class ContractStorageTests {
             runBlocking {
                 val ethereum1 = Eth(
                     Rpc(
-                        "http://ethereum1.lab.gematik.de:8547",
-                        "ws://ethereum1.lab.gematik.de:8546",
+                        "http://besu.lab.gematik.de:8547",
+                        "ws://besu.lab.gematik.de:8546",
                         isSigner = true
                     )
                 )

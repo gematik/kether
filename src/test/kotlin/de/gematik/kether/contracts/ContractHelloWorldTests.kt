@@ -30,7 +30,7 @@ class ContractHelloWorldTests {
         @JvmStatic
         fun helloWorldDeploy() {
             runBlocking {
-                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
+                val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
                 val greet = "Hello World"
                 val receipt = HelloWorld.deploy(ethereum1, account4.address, greet)
                 val helloWorldAddress = receipt.contractAddress!!

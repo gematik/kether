@@ -23,8 +23,8 @@ import java.math.BigInteger
 @ExperimentalSerializationApi
 class ContractGLDTokenRawTxTests {
     companion object {
-        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
-        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
+        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
+        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
 
         lateinit var gldToken: GLDToken
 
@@ -32,7 +32,7 @@ class ContractGLDTokenRawTxTests {
         @JvmStatic
         fun gldTokenDeploy() {
             runBlocking {
-                val ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8545", "ws://ethereum1.lab.gematik.de:8546"))
+                val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
                 val initialSupply = Quantity(1E18.toLong())
                 val receipt = GLDToken.deploy(ethereum1, account1.address, initialSupply)
                 val gLDTokenAddress = receipt.contractAddress!!

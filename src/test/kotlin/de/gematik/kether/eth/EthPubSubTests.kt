@@ -25,14 +25,14 @@ import java.util.*
 class EthPubSubTests {
 
     companion object {
-        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
+        val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
         lateinit var helloWorld: HelloWorld
         lateinit var ethereum1: Eth
 
         @BeforeAll
         @JvmStatic
         fun prepare() {
-                ethereum1 = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
+                ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
         }
 
         @AfterAll

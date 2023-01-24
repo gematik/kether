@@ -76,6 +76,7 @@ abstract class Contract(
                         receipt = it.let {
                             eth.ethGetTransactionReceipt(it)
                         }
+                        println("Kuckuck")
                     }
                     receipt
                 }

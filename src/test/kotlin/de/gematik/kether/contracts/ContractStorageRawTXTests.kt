@@ -30,15 +30,15 @@ class ContractStorageRawTXTests {
             runBlocking {
                 val ethereum1 = Eth(
                     Rpc(
-                        "http://ethereum1.lab.gematik.de:8545",
-                        "ws://ethereum1.lab.gematik.de:8546"
+                        "http://besu.lab.gematik.de:8545",
+                        "ws://besu.lab.gematik.de:8546"
                     )
                 )
                 val receipt = Storage.deploy(ethereum1, account4.address)
                 val storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 storage = Storage(
-                    Eth(Rpc("http://ethereum1.lab.gematik.de:8545", "ws://ethereum1.lab.gematik.de:8546")),
+                    Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546")),
                     Transaction(to = storageAddress, from = account4.address)
                 )
             }

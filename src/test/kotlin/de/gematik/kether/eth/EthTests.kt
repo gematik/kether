@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test
 class EthTests {
     companion object {
         val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
-        val ethereum1 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8545"))
-        val ethereum2 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8547"))
+        val ethereum1 =  Eth(Rpc("http://besu.lab.gematik.de:8545"))
+        val ethereum2 =  Eth(Rpc("http://besu.lab.gematik.de:8547"))
     }
 
     @Test

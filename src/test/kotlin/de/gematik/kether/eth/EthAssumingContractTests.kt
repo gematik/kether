@@ -20,14 +20,14 @@ import org.junit.jupiter.api.Test
 class EthAssumingContractTests {
     companion object {
         val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1)
-        val ethereum1 =  Eth(Rpc("http://ethereum1.lab.gematik.de:8547"))
+        val ethereum1 =  Eth(Rpc("http://besu.lab.gematik.de:8547"))
         lateinit var storageAddress: Address
 
         @BeforeAll
         @JvmStatic
         fun storageDeploy() {
             runBlocking {
-                val eth = Eth(Rpc("http://ethereum1.lab.gematik.de:8547", "ws://ethereum1.lab.gematik.de:8546", isSigner = true))
+                val eth = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
                 val receipt = Storage.deploy(eth, account1.address)
                 storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
