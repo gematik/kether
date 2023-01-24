@@ -73,11 +73,11 @@ abstract class Contract(
                         val subscription = eth.ethSubscribe(SubscriptionTypes.newHeads)
                         eth.notifications.first { it.params.subscription == subscription }
                         eth.ethUnsubscribe(subscription)
-                        val receipt = it.let {
+                        receipt = it.let {
                             eth.ethGetTransactionReceipt(it)
                         }
                     }
-                    receipt?: throw Exception("Invalid Receipt")
+                    receipt
                 }
             }
         }
