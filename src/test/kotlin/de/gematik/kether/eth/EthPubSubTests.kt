@@ -57,7 +57,7 @@ class EthPubSubTests {
     fun ethSubscribeLogs() {
         runBlocking {
             val newGreeting = "Greetings at ${Date()}"
-            val receipt = HelloWorld.deploy(ethereum1, account1.address, "Hello World")
+            val receipt = TransactionHandler.receipt(ethereum1,HelloWorld.deploy(ethereum1, account1.address, "Hello World"))
             val helloWorldAddress = receipt.contractAddress!!
             assert(receipt.isSuccess)
             helloWorld = HelloWorld(

@@ -3,6 +3,7 @@ package de.gematik.kether.contracts
 import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.TransactionHandler
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.rpc.Rpc
@@ -32,8 +33,10 @@ class ContractGLDTokenTests {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
                 val initialSupply = Quantity(1E18.toLong())
-                val receipt = GLDToken.deploy(ethereum1, account1.address, initialSupply)
-                val gLDTokenAddress = receipt.contractAddress!!
+                val hash = GLDToken.deploy(ethereum1, account1.address, initialSupply)
+                TransactionHandler.register(ethereum1,hash)
+                val receipt = TransactionHandler.popReceipt(hash)
+                val gLDTokenAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 gldToken = GLDToken(
                     ethereum1,

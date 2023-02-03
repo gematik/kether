@@ -3,6 +3,7 @@ package de.gematik.kether.contracts
 import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.TransactionHandler
 import de.gematik.kether.eth.types.Address
 import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.rpc.Rpc
@@ -24,7 +25,7 @@ import java.math.BigInteger
 class ContractGLDTokenRawTxTests {
     companion object {
         val account1 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
-        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_1_R)
+        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4_R)
 
         lateinit var gldToken: GLDToken
 
@@ -34,7 +35,7 @@ class ContractGLDTokenRawTxTests {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
                 val initialSupply = Quantity(1E18.toLong())
-                val receipt = GLDToken.deploy(ethereum1, account1.address, initialSupply)
+                val receipt = TransactionHandler.receipt(ethereum1,GLDToken.deploy(ethereum1, account1.address, initialSupply))
                 val gLDTokenAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 gldToken = GLDToken(
@@ -72,19 +73,10 @@ class ContractGLDTokenRawTxTests {
     @Test
     fun gldTokenTransfer() {
         runBlocking {
-//            launch {
-//                val subscriptionId = gldToken.subscribe(GLDToken.eventTransfer)
-//                gldToken.events.collect{
-//                    if(it is GLDToken.EventTransfer){
-//                        gldToken.unsubscribe(subscriptionId)
-//                        cancel()
-//                    }
-//                }
-//            }
-            val receipt = gldToken.transfer(account4.address, Quantity(1E16.toLong()))
+            val receipt = TransactionHandler.receipt(gldToken.eth,gldToken.transfer(account4.address, Quantity(1E16.toLong())))
             assert(receipt.isSuccess)
             val balance = gldToken.balanceOf(account4.address)
-            assert(balance == Quantity(1E16.toLong()))
+            assert(balance.toBigInteger().toLong() == 1E16.toLong())
         }
     }
 }

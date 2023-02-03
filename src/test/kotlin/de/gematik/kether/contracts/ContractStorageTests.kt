@@ -3,6 +3,7 @@ package de.gematik.kether.contracts
 import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.TransactionHandler
 import de.gematik.kether.eth.types.Quantity
 import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
@@ -35,8 +36,10 @@ class ContractStorageTests {
                         isSigner = true
                     )
                 )
-                val receipt = Storage.deploy(ethereum1, key.address)
-                val storageAddress = receipt.contractAddress!!
+                val hash = Storage.deploy(ethereum1, key.address)
+                TransactionHandler.register(ethereum1,hash)
+                val receipt = TransactionHandler.popReceipt(hash)
+                val storageAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 storage = Storage(
                     ethereum1,

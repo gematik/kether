@@ -3,6 +3,7 @@ package de.gematik.kether.contracts
 import de.gematik.kether.crypto.AccountStore
 import de.gematik.kether.crypto.accountStore
 import de.gematik.kether.eth.Eth
+import de.gematik.kether.eth.TransactionHandler
 import de.gematik.kether.eth.types.SubscriptionTypes
 import de.gematik.kether.eth.types.Transaction
 import de.gematik.kether.rpc.Rpc
@@ -33,8 +34,10 @@ class ContractHelloWorldRawTxTests {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
                 val greet = "Hello World"
-                val receipt = HelloWorld.deploy(ethereum1, account4.address, greet)
-                val helloWorldAddress = receipt.contractAddress!!
+                val hash = HelloWorld.deploy(ethereum1, account4.address, greet)
+                TransactionHandler.register(ethereum1, hash)
+                val receipt = TransactionHandler.popReceipt(hash)
+                val helloWorldAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 helloWorld = HelloWorld(
                     ethereum1,

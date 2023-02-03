@@ -44,7 +44,7 @@ abstract class Contract(
     }
 
     companion object {
-        fun deploy(eth: Eth, from: Address, params: Data): TransactionReceipt {
+        fun deploy(eth: Eth, from: Address, params: Data): Data32 {
             return runBlocking {
                 val transaction = Transaction(
                     from = from,
@@ -52,7 +52,8 @@ abstract class Contract(
                     gasPrice = Quantity(0),
                     data = params
                 )
-                transact(eth, transaction)
+                //transact(eth, transaction)
+                submitTransaction(eth, transaction)
             }
         }
 
@@ -82,6 +83,21 @@ abstract class Contract(
             }
         }
 
+        suspend fun submitTransaction(eth: Eth, transaction: Transaction): Data32 {
+            require(transaction.from!=null) {"sender address required to send transaction"}
+            return withTimeout(10000) {
+                val tx = transaction.copy(
+                    gas = eth.ethEstimateGas(transaction),
+                    nonce = eth.ethGetTransactionCount(transaction.from, Quantity(Tag.pending))
+                )
+                if (eth.rpc.isSigner) {
+                    eth.ethSendTransaction(tx)
+                } else {
+                    eth.ethSendRawTransaction(tx.sign(chainId = eth.chainId))
+                }
+            }
+        }
+
         fun checkEvent(log: Log, eventType: Data32): Log? {
             return if (log.topics?.get(0)?.toByteArray().contentEquals(eventType.toByteArray())) {
                 log
@@ -104,11 +120,11 @@ abstract class Contract(
         )
     }
 
-    suspend fun transact(params: Data): TransactionReceipt {
+    suspend fun transact(params: Data): Data32 {
         val transaction = baseTransaction.copy(
             data = params
         )
-        return Companion.transact(eth, transaction)
+        return Companion.submitTransaction(eth, transaction)
     }
 
     suspend fun subscribe(eventSelector: Data32): String {

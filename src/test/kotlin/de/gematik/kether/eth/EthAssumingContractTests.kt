@@ -28,7 +28,7 @@ class EthAssumingContractTests {
         fun storageDeploy() {
             runBlocking {
                 val eth = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
-                val receipt = Storage.deploy(eth, account1.address)
+                val receipt = TransactionHandler.receipt(eth,Storage.deploy(eth, account1.address))
                 storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 eth.close()

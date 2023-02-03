@@ -29,7 +29,7 @@ val functionStore = "store(uint256)".keccak().copyOfRange(0, 4)
 // events
 override val listOfEventDecoders: List<(Log) -> Event?> = listOf()
 // functions
-suspend fun inc(): TransactionReceipt {
+suspend fun inc(): Data32 {
 val params = DataEncoder()
 .encode(Data4(functionInc)).build()
 return transact(params)
@@ -39,7 +39,7 @@ val params = DataEncoder()
 .encode(Data4(functionRetrieve)).build()
 val decoder = DataDecoder(call(params))
 return decoder.next(AbiUint256::class)}
-suspend fun store(num: AbiUint256): TransactionReceipt {
+suspend fun store(num: AbiUint256): Data32 {
 val params = DataEncoder()
 .encode(Data4(functionStore))
 .encode(num).build()

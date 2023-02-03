@@ -27,7 +27,7 @@ class EthRawTransactionsSecp256r1Tests {
         fun storageDeploy() {
             runBlocking {
                 val eth = Eth(Rpc("http://besu.lab.gematik.de:8545", "ws://besu.lab.gematik.de:8546"))
-                val receipt = Storage.deploy(eth, account2.address)
+                val receipt = TransactionHandler.receipt(eth,Storage.deploy(eth, account2.address))
                 storageAddress = receipt.contractAddress!!
                 assert(receipt.isSuccess)
                 eth.close()
