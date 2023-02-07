@@ -45,7 +45,7 @@ fun ByteArray.toHex(discardLeadingZeros: Boolean = false): String {
 fun BigInteger.toByteArray(size: Int): ByteArray {
     val byteList = toByteArray().dropWhile { it == 0.toByte() }
     check(byteList.size <= size){"BigInteger to big"}
-    return byteList.toByteArray().copyInto(ByteArray(size),size - byteList.size, 0, size)
+    return byteList.toByteArray().copyInto(ByteArray(size),size - byteList.size, 0, byteList.size)
 }
 
 

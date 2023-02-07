@@ -33,9 +33,7 @@ class ContractHelloWorldTests {
             runBlocking {
                 val ethereum1 = Eth(Rpc("http://besu.lab.gematik.de:8547", "ws://besu.lab.gematik.de:8546", isSigner = true))
                 val greet = "Hello World"
-                val hash = HelloWorld.deploy(ethereum1, account4.address, greet)
-                TransactionHandler.register(ethereum1,hash)
-                val receipt = TransactionHandler.popReceipt(hash)
+                val receipt = TransactionHandler.receipt(ethereum1,HelloWorld.deploy(ethereum1, account4.address, greet))
                 val helloWorldAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 helloWorld = HelloWorld(
@@ -63,7 +61,7 @@ class ContractHelloWorldTests {
         runBlocking {
             val greeting = "Greetings at ${Date()}"
             launch {
-                val receipt = helloWorld.newGreeting(_greet = greeting)
+                val receipt = TransactionHandler.receipt(helloWorld.eth,helloWorld.newGreeting(_greet = greeting))
                 assert(receipt.isSuccess)
             }
             launch {

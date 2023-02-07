@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
     id("maven-publish")
-    id("de.gematik.kether.codegen") version "1.0"
+    id("de.gematik.kether.codegen") version "1.3.1"
 }
 
 group = "de.gematik.kether"
@@ -10,12 +10,14 @@ version = "1.0"
 
 repositories {
     mavenCentral()
+    maven(url="https://repo.labor.gematik.de/repository/maven-releases")
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
+    implementation("de.gematik.kether:solckt:1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")

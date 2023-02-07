@@ -22,7 +22,7 @@ import kotlin.random.Random
 class ContractStorageRawTXTests {
 
     companion object {
-        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4)
+        val account4 = accountStore.getAccount(AccountStore.TEST_ACCOUNT_4_R)
         lateinit var storage: Storage
 
         @BeforeAll

@@ -36,7 +36,7 @@ class ContractHelloWorldRawTxTests {
                 val greet = "Hello World"
                 val hash = HelloWorld.deploy(ethereum1, account4.address, greet)
                 TransactionHandler.register(ethereum1, hash)
-                val receipt = TransactionHandler.popReceipt(hash)
+                val receipt = TransactionHandler.receipt(ethereum1,hash)
                 val helloWorldAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 helloWorld = HelloWorld(
@@ -64,7 +64,7 @@ class ContractHelloWorldRawTxTests {
         runBlocking {
             val greeting = "Greetings at ${Date()}"
             launch {
-                val receipt = helloWorld.newGreeting(_greet = greeting)
+                val receipt = TransactionHandler.receipt(helloWorld.eth,helloWorld.newGreeting(_greet = greeting))
                 assert(receipt.isSuccess)
             }
             launch {

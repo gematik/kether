@@ -35,7 +35,7 @@ class ContractGLDTokenTests {
                 val initialSupply = Quantity(1E18.toLong())
                 val hash = GLDToken.deploy(ethereum1, account1.address, initialSupply)
                 TransactionHandler.register(ethereum1,hash)
-                val receipt = TransactionHandler.popReceipt(hash)
+                val receipt = TransactionHandler.receipt(ethereum1,hash)
                 val gLDTokenAddress = receipt?.contractAddress!!
                 assert(receipt.isSuccess)
                 gldToken = GLDToken(
@@ -82,7 +82,7 @@ class ContractGLDTokenTests {
                     }
                 }
             }
-            val receipt = gldToken.transfer(account4.address, Quantity(1E16.toLong()))
+            val receipt = TransactionHandler.receipt(gldToken.eth,gldToken.transfer(account4.address, Quantity(1E16.toLong())))
             assert(receipt.isSuccess)
             val balance = gldToken.balanceOf(account4.address)
             assert(balance == Quantity(1E16.toLong()))
