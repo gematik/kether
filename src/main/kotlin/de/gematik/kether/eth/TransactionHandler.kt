@@ -118,7 +118,7 @@ object TransactionHandler {
                         it.remove()
                         if (pendingTransactions[eth]!!.size == 0) {
                             pendingTransactions.remove(eth)
-                            eth.ethUnsubscribe(subscriptions[eth]!!)
+                            //eth.ethUnsubscribe(subscriptions[eth]!!)
                             return
                         }
 
