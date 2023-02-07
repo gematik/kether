@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.gematik.kether"
-version = "1.0"
+version = "1.3"
 
 repositories {
     mavenCentral()
