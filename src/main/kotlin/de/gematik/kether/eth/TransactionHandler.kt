@@ -40,6 +40,7 @@ object TransactionHandler {
         }
         File(filename).writeText(Json.encodeToString(pt))
     }
+    @Synchronized
     fun register(eth: Eth, transactionHash: Data32) {
         initTransactionReceipt(transactionHash, CompletableDeferred())
         if (pendingTransactions.containsKey(eth)) {
@@ -113,12 +114,13 @@ object TransactionHandler {
                 while (it.hasNext()) {
                     val pt = it.next()
                     val receipt = getTransactionReceipt(eth, pt)
+                    println(receipt)
                     if (receipt != null) {
                         completeTransactionReceipt(pt, receipt)
                         it.remove()
                         if (pendingTransactions[eth]!!.size == 0) {
                             pendingTransactions.remove(eth)
-                            //eth.ethUnsubscribe(subscriptions[eth]!!)
+                            eth.ethUnsubscribe(subscriptions[eth]!!)
                             return
                         }
 

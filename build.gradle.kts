@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.gematik.kether"
-version = "1.3"
+version = "1.4"
 
 repositories {
     mavenCentral()
@@ -33,7 +33,7 @@ tasks.test {
 }
 
 configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {
-    packageName.set("de.gematik.kether.contracts")
+    packageName.set("de.gematik.kether.contracts"
 }
 
 publishing {

@@ -37,6 +37,7 @@ class ContractGLDTokenTests {
                 TransactionHandler.register(ethereum1,hash)
                 val receipt = TransactionHandler.receipt(ethereum1,hash)
                 val gLDTokenAddress = receipt?.contractAddress!!
+                println(gLDTokenAddress)
                 assert(receipt.isSuccess)
                 gldToken = GLDToken(
                     ethereum1,
