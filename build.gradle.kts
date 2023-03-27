@@ -33,7 +33,7 @@ tasks.test {
 }
 
 configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {
-    packageName.set("de.gematik.kether.contracts"
+    packageName.set("de.gematik.kether.contracts")
 }
 
 publishing {
