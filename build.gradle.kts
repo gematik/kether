@@ -10,7 +10,7 @@ version = "1.4.2"
 
 repositories {
     mavenCentral()
-    maven(url="https://repo.labor.gematik.de/repository/maven-releases")
+    mavenLocal()
 }
 
 dependencies {
@@ -34,6 +34,19 @@ tasks.test {
 
 configure<de.gematik.kether.codegen.CodeGeneratorPluginExtension> {
     packageName.set("de.gematik.kether.contracts")
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+    kotlin {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
+    }
 }
 
 publishing {
